@@ -1,0 +1,47 @@
+import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '../store/auth'
+
+/**
+ * 路由表 + 守卫。meta.requiresAuth 需登录，meta.admin 需管理员。
+ * 未登录访问受限页跳登录；公共只读页(知识库)允许游客。
+ */
+const routes = [
+  { path: '/login', component: () => import('../views/Login.vue'), meta: { public: true } },
+  { path: '/register', component: () => import('../views/Register.vue'), meta: { public: true } },
+  {
+    path: '/',
+    component: () => import('../layout/MainLayout.vue'),
+    children: [
+      { path: '', redirect: '/dashboard' },
+      { path: 'dashboard', component: () => import('../views/Dashboard.vue') },
+      { path: 'knowledge', component: () => import('../views/KnowledgeList.vue'), meta: { public: true } },
+      { path: 'knowledge/:id', component: () => import('../views/KnowledgeDetail.vue'), meta: { public: true } },
+      { path: 'help', component: () => import('../views/HelpList.vue'), meta: { requiresAuth: true } },
+      { path: 'help/create', component: () => import('../views/HelpCreate.vue'), meta: { requiresAuth: true } },
+      { path: 'help/:id', component: () => import('../views/HelpDetail.vue'), meta: { requiresAuth: true } },
+      { path: 'opportunities', component: () => import('../views/OpportunityList.vue'), meta: { requiresAuth: true } },
+      { path: 'timeline', component: () => import('../views/Timeline.vue'), meta: { requiresAuth: true } },
+      { path: 'notifications', component: () => import('../views/Notifications.vue'), meta: { requiresAuth: true } },
+      { path: 'admin/audit', component: () => import('../views/admin/AuditQueue.vue'), meta: { admin: true } },
+    ],
+  },
+]
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes,
+})
+
+router.beforeEach((to) => {
+  const auth = useAuthStore()
+  if (to.meta.public) return true
+  if ((to.meta.requiresAuth || to.meta.admin) && !auth.isLogin) {
+    return { path: '/login', query: { redirect: to.fullPath } }
+  }
+  if (to.meta.admin && !auth.isAdmin) {
+    return { path: '/dashboard' }
+  }
+  return true
+})
+
+export default router

@@ -1,0 +1,34 @@
+# ===== Java / Maven =====
+target/
+*.class
+*.jar
+*.war
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/
+mvnw
+mvnw.cmd
+
+# ===== 前端 / Node =====
+node_modules/
+dist/
+dist-ssr/
+*.local
+.vite/
+
+# ===== IDE =====
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# ===== 运行期 / 上传 / 日志 =====
+data/
+logs/
+*.log
+/uploads/
+
+# ===== 系统 =====
+.DS_Store
+Thumbs.db

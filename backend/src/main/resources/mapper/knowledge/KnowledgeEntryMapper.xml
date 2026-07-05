@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xju.sem.module.knowledge.mapper.KnowledgeEntryMapper">
+
+    <!--
+      FULLTEXT（ngram）全文搜索（§6.6）。要求 knowledge_entry 表已建
+        ALTER TABLE knowledge_entry ADD FULLTEXT INDEX ft_title_content (title, content) WITH PARSER ngram;
+      （schema.sql 中已随建表语句一并声明），且 MySQL 侧 ngram_token_size=2（适配中文双字切分，需
+      my.cnf 配置并重启生效，部署前置条件见实现说明文档）。
+    -->
+    <select id="fullTextSearch" resultType="com.xju.sem.module.knowledge.entity.KnowledgeEntry">
+        SELECT *, MATCH(title, content) AGAINST(#{keyword} IN NATURAL LANGUAGE MODE) AS relevance
+        FROM knowledge_entry
+        WHERE deleted = 0 AND status = 'PUBLISHED'
+        <if test="category != null and category != ''">
+            AND category = #{category}
+        </if>
+        AND MATCH(title, content) AGAINST(#{keyword} IN NATURAL LANGUAGE MODE)
+        ORDER BY relevance DESC, view_count DESC, created_at DESC
+    </select>
+
+    <!-- 短关键词(长度&lt;2)兜底：仅对 title 做 LIKE，不对 content 做 LIKE，避免全表扫描 -->
+    <select id="likeSearch" resultType="com.xju.sem.module.knowledge.entity.KnowledgeEntry">
+        SELECT *, 0 AS relevance
+        FROM knowledge_entry
+        WHERE deleted = 0 AND status = 'PUBLISHED'
+          AND title LIKE CONCAT('%', #{keyword}, '%')
+        <if test="category != null and category != ''">
+            AND category = #{category}
+        </if>
+        ORDER BY view_count DESC, created_at DESC
+    </select>
+
+</mapper>
