@@ -32,3 +32,9 @@ logs/
 # ===== 系统 =====
 .DS_Store
 Thumbs.db
+
+# ===== 设计源素材包(体积大,含zip,所需资源已抽入 frontend/src/assets) =====
+SE前端设计/
+# ===== Playwright 临时(页面快照/控制台日志) =====
+.playwright-mcp/
+*:Zone.Identifier

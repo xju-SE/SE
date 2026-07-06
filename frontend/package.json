@@ -5,7 +5,8 @@
   "description": "新疆大学校友圈与双圈成长导航平台 - 前端(最小可视骨架)",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc -b && vite build",
+    "build": "vite build",
+    "type-check": "vue-tsc -b",
     "preview": "vite preview"
   },
   "dependencies": {

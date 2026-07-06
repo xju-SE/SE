@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="55 65 275 255">
+  <defs>
+    <linearGradient id="xjGradient" x1="7%" y1="93%" x2="93%" y2="7%">
+      <stop offset="0" stop-color="#9BE724"/>
+      <stop offset="0.30" stop-color="#39CE61"/>
+      <stop offset="0.64" stop-color="#05BF8D"/>
+      <stop offset="1" stop-color="#04AEC0"/>
+    </linearGradient>
+  </defs>
+  <path d="M84 127 L148 193 L153 191 L164 181 L178 171 L175 166 L142 133 L136 129 L130 127 Z" fill="url(#xjGradient)"/>
+  <path d="M195 239 L195 241 L238 284 L244 287 L252 289 L293 289 L289 283 L222 215 Z" fill="url(#xjGradient)"/>
+</svg>

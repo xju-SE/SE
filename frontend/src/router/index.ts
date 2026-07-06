@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../store/auth'
+import { useDemoStore } from '../store/demo'
 
 /**
  * 路由表 + 守卫。meta.requiresAuth 需登录，meta.admin 需管理员。
@@ -14,6 +15,7 @@ const routes = [
     children: [
       { path: '', redirect: '/dashboard' },
       { path: 'dashboard', component: () => import('../views/Dashboard.vue') },
+      { path: 'profile', component: () => import('../views/Profile.vue'), meta: { requiresAuth: false } },
       { path: 'knowledge', component: () => import('../views/KnowledgeList.vue'), meta: { public: true } },
       { path: 'knowledge/:id', component: () => import('../views/KnowledgeDetail.vue'), meta: { public: true } },
       { path: 'help', component: () => import('../views/HelpList.vue'), meta: { requiresAuth: true } },
@@ -34,7 +36,10 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const auth = useAuthStore()
+  const demo = useDemoStore()
   if (to.meta.public) return true
+  // 演示模式：全站可浏览（测试/演示用途），无需登录
+  if (demo.enabled) return true
   if ((to.meta.requiresAuth || to.meta.admin) && !auth.isLogin) {
     return { path: '/login', query: { redirect: to.fullPath } }
   }

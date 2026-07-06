@@ -53,16 +53,21 @@ export const opportunityApi = {
   list: (params: any) => request.get('/opportunities', { params }),
   detail: (id: number) => request.get(`/opportunities/${id}`),
   teams: (params: any) => request.get('/teams', { params }),
+  // FR-M5-08：简单报名信令（STUDENT/ALUMNI），路径参数无请求体
+  apply: (id: number) => request.patch(`/opportunities/${id}/apply`),
 }
 
 // M6 成长时间线
 export const timelineApi = {
   // GET /api/v1/timeline/me 不接受查询参数（聚合视图，无 route 入参），调用方传参会被忽略，
-  // 保留形参签名只为不破坏既有调用点，不代表后端消费它。
+  // 保留形参签名只为不破坏既有调用点，不代表后端消费它。返回 MyTimelineDTO：
+  // {routeType,currentStage,needsRouteDecision,graduated,stages:[{stage,stageLabel,nodes:[{node,progressStatus,overdue,monthsOverdue,...}]}],overallProgress}
   mine: (params?: any) => request.get('/timeline/me', { params }),
   // FS9：真实端点 PATCH /timeline-nodes/{id}/progress，status∈{NOT_STARTED,DONE}
   markProgress: (nodeId: number, status: string) =>
     request.patch(`/timeline-nodes/${nodeId}/progress`, { status }),
+  // FR-M6-07：选择/切换发展路线，routeType∈{POSTGRAD,EMPLOY,COMPETITION,CIVIL}（UNDECIDED 不可提交）
+  confirmRoute: (routeType: string) => request.patch('/timeline/me/route', null, { params: { routeType } }),
 }
 
 // 通知

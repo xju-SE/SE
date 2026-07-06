@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" role="img"><title>Notification</title><defs>
+<linearGradient id="gLife" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#96E42D"/><stop offset=".5" stop-color="#22C55E"/><stop offset="1" stop-color="#04BFA5"/></linearGradient>
+<linearGradient id="gStudy" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#60A5FA"/><stop offset=".55" stop-color="#2F7DF6"/><stop offset="1" stop-color="#1748B7"/></linearGradient>
+<linearGradient id="gWarm" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFD36A"/><stop offset="1" stop-color="#F59E0B"/></linearGradient>
+<linearGradient id="gDanger" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FF8B7B"/><stop offset="1" stop-color="#EF4444"/></linearGradient>
+<filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#081426" flood-opacity=".18"/></filter>
+</defs><path d="M24 8c-7 0-11 5-11 12v6l-4 5h30l-4-5v-6c0-7-4-12-11-12Z" fill="url(#gStudy)" filter="url(#shadow)"/><path d="M19 35c1 4 9 4 10 0" fill="#1748B7"/><circle cx="35" cy="12" r="7" fill="url(#gDanger)" stroke="white" stroke-width="2"/><text x="35" y="15" text-anchor="middle" font-family="Arial" font-size="8" font-weight="700" fill="white">2</text></svg>

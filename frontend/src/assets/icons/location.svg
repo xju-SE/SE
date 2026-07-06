@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" role="img"><title>Location</title><defs>
+<linearGradient id="gLife" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#96E42D"/><stop offset=".5" stop-color="#22C55E"/><stop offset="1" stop-color="#04BFA5"/></linearGradient>
+<linearGradient id="gStudy" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#60A5FA"/><stop offset=".55" stop-color="#2F7DF6"/><stop offset="1" stop-color="#1748B7"/></linearGradient>
+<linearGradient id="gWarm" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFD36A"/><stop offset="1" stop-color="#F59E0B"/></linearGradient>
+<linearGradient id="gDanger" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FF8B7B"/><stop offset="1" stop-color="#EF4444"/></linearGradient>
+<filter id="shadow" x="-30%" y="-30%" width="160%" height="170%"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#081426" flood-opacity=".18"/></filter>
+</defs><path d="M24 5c-9 0-16 7-16 16 0 11 16 23 16 23s16-12 16-23c0-9-7-16-16-16Z" fill="url(#gLife)" filter="url(#shadow)"/><circle cx="24" cy="21" r="8" fill="white"/><path d="m24 15 2 4 5 .7-3.5 3.5.8 5-4.3-2.3-4.3 2.3.8-5-3.5-3.5 5-.7Z" fill="#22C55E"/></svg>

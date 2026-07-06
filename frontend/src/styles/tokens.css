@@ -1,0 +1,13 @@
+:root{
+ --xj-lime:#96E42D;--xj-green:#22C55E;--xj-green-deep:#129B52;--xj-teal:#04BFA5;--xj-cyan:#14B8C4;
+ --xj-blue:#2563EB;--xj-blue-bright:#2F7DF6;--xj-blue-deep:#1748B7;--xj-sky:#60A5FA;
+ --xj-ink:#081426;--xj-text:#1A2A43;--xj-muted:#52627A;--xj-subtle:#718096;
+ --xj-page:#F5F8FC;--xj-card:#FFFFFF;--xj-soft:#F8FAFD;--xj-line:#E5EBF2;--xj-line-strong:#D6DFEA;
+ --xj-success:#16A965;--xj-info:#2F7DF6;--xj-warning:#F59E0B;--xj-danger:#EF4444;--xj-neutral:#94A3B8;
+ --xj-radius-xs:6px;--xj-radius-sm:9px;--xj-radius-md:12px;--xj-radius-lg:16px;--xj-radius-xl:22px;--xj-pill:999px;
+ --xj-shadow-card:0 10px 30px rgba(15,30,53,.075),0 2px 8px rgba(15,30,53,.035);
+ --xj-shadow-hover:0 16px 42px rgba(15,30,53,.12),0 4px 12px rgba(15,30,53,.05);
+ --xj-shadow-float:0 20px 60px rgba(8,20,38,.17);
+ --xj-font:Inter,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+ --xj-fast:140ms;--xj-base:220ms;--xj-slow:520ms;--xj-ease:cubic-bezier(.22,.8,.2,1);
+}

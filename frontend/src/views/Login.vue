@@ -1,61 +1,198 @@
 <template>
-  <div class="auth-page">
-    <el-card class="auth-card">
-      <template #header>
-        <div class="title">登录 · 新大校友圈</div>
-      </template>
-      <el-form :model="form" label-width="70px" @submit.prevent="onSubmit">
-        <el-form-item label="用户名">
-          <el-input v-model="form.username" placeholder="请输入用户名" @keyup.enter="onSubmit" />
-        </el-form-item>
-        <el-form-item label="密码">
-          <el-input v-model="form.password" type="password" show-password placeholder="请输入密码" @keyup.enter="onSubmit" />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" :loading="loading" style="width: 100%" @click="onSubmit">登录</el-button>
-        </el-form-item>
-      </el-form>
-      <div class="footer-link">
-        还没有账号？<router-link to="/register">去注册</router-link>
+  <div class="login-stage" :class="{ started, ready, reduced }">
+    <!-- 右侧：品牌渐变 + 校园场景 + X 雕塑 + 登录卡 -->
+    <div class="stage-right">
+      <div class="right-gradient"></div>
+      <div class="right-scene" :style="{ backgroundImage: `url(${sceneBg})` }"></div>
+      <div class="right-veil"></div>
+      <div class="right-slogan">Growth Navigation for Every Journey</div>
+
+      <div class="login-card" role="dialog" aria-label="登录">
+        <div class="lc-brand"><XLogo variant="lockup" :size="30" /></div>
+        <h2 class="lc-title">欢迎登录</h2>
+        <p class="lc-sub">连接校园，导航每一步成长</p>
+
+        <div class="role-switch">
+          <button :class="{ on: role === 'STUDENT' }" @click="role = 'STUDENT'">在校生</button>
+          <button :class="{ on: role === 'ALUMNI' }" @click="role = 'ALUMNI'">毕业生</button>
+        </div>
+
+        <div class="xj-field">
+          <label class="xj-label">账号 / 学号</label>
+          <div class="xj-input-wrap" :class="{ error: err }">
+            <input ref="userRef" class="xj-input" v-model="form.username" placeholder="请输入账号" @keyup.enter="onSubmit" />
+          </div>
+        </div>
+        <div class="xj-field">
+          <label class="xj-label">密码</label>
+          <div class="xj-input-wrap" :class="{ error: err }">
+            <input class="xj-input" :type="showPwd ? 'text' : 'password'" v-model="form.password" placeholder="请输入密码" @keyup.enter="onSubmit" />
+            <span class="pwd-toggle" @click="showPwd = !showPwd">{{ showPwd ? '隐藏' : '显示' }}</span>
+          </div>
+        </div>
+        <div class="lc-row">
+          <label class="remember"><input type="checkbox" v-model="remember" /> 记住我</label>
+          <span class="forgot" @click="onForgot">忘记密码？</span>
+        </div>
+        <button class="xj-btn life lg lc-submit" :disabled="loading" @click="onSubmit">
+          <XLoaderInline v-if="loading" /> {{ loading ? '登录中…' : '登 录' }}
+        </button>
+        <div class="lc-foot">还没有账号？<router-link to="/register">立即注册</router-link></div>
       </div>
-    </el-card>
+    </div>
+
+    <!-- 左侧：品牌介绍 -->
+    <div class="stage-left">
+      <div class="intro-block">
+        <h1 class="intro-title">探索成长方向，<br /><span class="grad">连接无限可能</span></h1>
+        <p class="intro-sub">为大学生提供更清晰的成长路径与交流机会</p>
+        <p class="intro-desc">XJOURNEY 疆行是一款面向大学生的成长导航平台，聚焦学习发展、校园交流、资源共享与生涯规划，帮助你高效连接信息、发现机会、规划未来。</p>
+      </div>
+    </div>
+
+    <!-- 会移动的品牌 Logo（idle 居中可点击 → 转场后停在左上） -->
+    <div class="brand-logo" :class="{ clickable: !started }" tabindex="0" role="button" aria-label="进入 XJOURNEY"
+      @click="start" @keydown.enter="start" @keydown.space.prevent="start">
+      <XLogo variant="full" :size="started ? 40 : 74" />
+      <div v-if="!started" class="enter-hint">点击进入</div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted, h, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '../store/auth'
+import XLogo from '../components/XLogo.vue'
+import sceneBgGreen from '../assets/bg/绿色雕塑背景.png'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
 
+const started = ref(false)
+const ready = ref(false)
+const reduced = ref(false)
+const role = ref<'STUDENT' | 'ALUMNI'>('STUDENT')
 const form = reactive({ username: '', password: '' })
 const loading = ref(false)
+const showPwd = ref(false)
+const remember = ref(true)
+const err = ref(false)
+const userRef = ref<HTMLInputElement>()
+const sceneBg = sceneBgGreen
+
+function start() {
+  if (started.value) return
+  started.value = true
+  const delay = reduced.value ? 0 : 2400
+  setTimeout(async () => {
+    ready.value = true
+    await nextTick()
+    userRef.value?.focus()
+  }, delay)
+}
 
 async function onSubmit() {
+  if (!ready.value) return
   if (!form.username || !form.password) {
-    ElMessage.warning('请输入用户名和密码')
+    err.value = true
+    ElMessage.warning('请输入账号和密码')
     return
   }
+  err.value = false
   loading.value = true
   try {
     await auth.login(form.username, form.password)
-    const redirect = (route.query.redirect as string) || '/dashboard'
-    router.push(redirect)
+    if (remember.value) localStorage.setItem('lastUser', form.username)
+    router.push((route.query.redirect as string) || '/dashboard')
   } catch {
-    // 错误已由请求拦截器统一提示
+    /* 拦截器已提示 */
   } finally {
     loading.value = false
   }
 }
+function onForgot() {
+  ElMessage.info('请联系管理员或学院老师重置密码')
+}
+
+onMounted(() => {
+  reduced.value = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || false
+  form.username = localStorage.getItem('lastUser') || ''
+  if (reduced.value) start()
+})
+
+const XLoaderInline = () => h('span', { class: 'lc-spinner' })
 </script>
 
 <style scoped>
-.auth-page { height: 100vh; display: flex; align-items: center; justify-content: center; background: #f5f7fa; }
-.auth-card { width: 360px; }
-.title { font-weight: 600; text-align: center; }
-.footer-link { margin-top: 8px; text-align: center; font-size: 13px; color: #666; }
+.login-stage { position: fixed; inset: 0; overflow: hidden; background: #fff; font-family: var(--xj-font); }
+
+/* 右侧品牌区（含斜向分屏 clip-path） */
+.stage-right { position: absolute; inset: 0; clip-path: polygon(44% 0, 100% 0, 100% 100%, 36% 100%);
+  opacity: 0; transition: opacity 0.7s var(--xj-ease); pointer-events: none; }
+.started .stage-right { opacity: 1; pointer-events: auto; }
+.right-gradient { position: absolute; inset: 0; background: linear-gradient(120deg, #16A65A 0%, #08B58E 42%, #1E6FE0 100%);
+  transform: translateX(12%); transition: transform 0.7s var(--xj-ease); }
+.started .right-gradient { transform: translateX(0); }
+.right-scene { position: absolute; inset: 0; background-size: cover; background-position: center; mix-blend-mode: soft-light;
+  clip-path: inset(0 0 0 100%); transition: clip-path 0.85s var(--xj-ease) 0.55s, opacity 0.6s ease; opacity: .9; }
+.started .right-scene { clip-path: inset(0 0 0 0%); }
+.ready .right-scene { opacity: .38; }
+.right-veil { position: absolute; inset: 0; background: linear-gradient(120deg, rgba(22,166,90,.35), rgba(30,111,224,.15)); }
+.right-slogan { position: absolute; top: 34px; right: 42px; color: rgba(255,255,255,.92); font-size: 14px; font-weight: 700; letter-spacing: .6px;
+  opacity: 0; transition: opacity .5s ease .9s; }
+.started .right-slogan { opacity: 1; }
+
+/* 登录卡 */
+.login-card { position: absolute; top: 50%; right: 8%; width: 372px; transform: translateY(-50%) translateX(60px); opacity: 0;
+  background: #fff; border-radius: 20px; box-shadow: var(--xj-shadow-float); padding: 30px 30px 26px;
+  transition: opacity .6s var(--xj-ease) 1s, transform .6s var(--xj-ease) 1s; }
+.started .login-card { opacity: 1; transform: translateY(-50%) translateX(0); }
+.login-card :is(input, button) { pointer-events: none; }
+.ready .login-card :is(input, button) { pointer-events: auto; }
+.lc-brand { display: flex; justify-content: center; margin-bottom: 14px; }
+.lc-title { margin: 0; text-align: center; font-size: 22px; font-weight: 850; color: var(--xj-ink); }
+.lc-sub { margin: 6px 0 18px; text-align: center; font-size: 12.5px; color: var(--xj-subtle); }
+.role-switch { display: flex; background: var(--xj-soft); border: 1px solid var(--xj-line); border-radius: 10px; padding: 4px; margin-bottom: 18px; }
+.role-switch button { flex: 1; height: 34px; border: 0; background: transparent; border-radius: 7px; font-size: 13px; font-weight: 700; color: var(--xj-muted); cursor: pointer; transition: all var(--xj-fast); }
+.role-switch button.on { background: #fff; color: var(--xj-green-deep); box-shadow: 0 2px 8px rgba(15,30,53,.08); }
+.xj-field { margin-bottom: 14px; }
+.pwd-toggle { font-size: 11px; color: var(--xj-subtle); cursor: pointer; flex: none; }
+.lc-row { display: flex; align-items: center; justify-content: space-between; font-size: 12.5px; color: var(--xj-muted); margin: 4px 0 18px; }
+.remember { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+.forgot { color: var(--xj-green-deep); cursor: pointer; }
+.lc-submit { width: 100%; }
+.lc-foot { text-align: center; font-size: 12.5px; color: var(--xj-muted); margin-top: 16px; }
+.lc-foot a { color: var(--xj-green-deep); font-weight: 700; }
+.lc-spinner { width: 15px; height: 15px; border: 2px solid rgba(255,255,255,.5); border-top-color: #fff; border-radius: 50%; display: inline-block; animation: spin .7s linear infinite; margin-right: 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* 左侧介绍 */
+.stage-left { position: absolute; inset: 0; display: flex; align-items: center; padding-left: 8%; }
+.intro-block { max-width: 460px; opacity: 0; transform: translateY(16px); transition: opacity .5s ease .35s, transform .5s var(--xj-ease) .35s; }
+.started .intro-block { opacity: 1; transform: translateY(0); }
+.intro-title { font-size: 46px; line-height: 1.16; font-weight: 850; color: var(--xj-ink); margin: 0; letter-spacing: 1px; }
+.intro-title .grad { background: linear-gradient(100deg, #22C55E, #04BFA5 45%, #2563EB); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.intro-sub { font-size: 17px; color: var(--xj-text); font-weight: 600; margin: 20px 0 14px; }
+.intro-desc { font-size: 14px; color: var(--xj-muted); line-height: 1.9; }
+
+/* 会移动的 Logo */
+.brand-logo { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 30;
+  transition: all .65s cubic-bezier(.22,1,.36,1); display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.brand-logo.clickable { cursor: pointer; }
+.brand-logo.clickable:hover { transform: translate(-50%, -50%) scale(1.03); filter: drop-shadow(0 12px 30px rgba(8,20,38,.14)); }
+.started .brand-logo { top: 96px; left: 8%; transform: translate(0, 0); }
+.enter-hint { font-size: 12px; color: var(--xj-subtle); letter-spacing: 2px; animation: breathe 2.2s ease-in-out infinite; }
+@keyframes breathe { 0%,100% { opacity: .4; } 50% { opacity: .9; } }
+
+@media (max-width: 900px) {
+  .stage-right { clip-path: none; }
+  .stage-left { display: none; }
+  .login-card { right: 50%; transform: translate(50%, -50%) translateY(40px); width: min(88vw, 372px); }
+  .started .login-card { transform: translate(50%, -50%); }
+  .started .brand-logo { left: 50%; transform: translate(-50%, 0); top: 60px; }
+}
+.reduced .stage-right, .reduced .intro-block, .reduced .login-card, .reduced .right-scene, .reduced .right-slogan { transition: none !important; }
 </style>
