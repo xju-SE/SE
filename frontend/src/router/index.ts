@@ -48,7 +48,7 @@ const router = createRouter({
   routes,
 })
 
-router.beforeEach((to) => {
+router.beforeEach(async (to) => {
   const auth = useAuthStore()
   const demo = useDemoStore()
   if (to.meta.public) return true
@@ -56,6 +56,11 @@ router.beforeEach((to) => {
   if (demo.enabled) return true
   if ((to.meta.requiresAuth || to.meta.admin) && !auth.isLogin) {
     return { path: '/login', query: { redirect: to.fullPath } }
+  }
+  // 有 token 但用户信息未恢复（刷新/直达 URL）：先拉 /users/me 还原 role/authStatus，
+  // 否则 isAdmin 恒为 false，管理员刷新管理页会被误弹回 /dashboard
+  if (auth.isLogin && !auth.user) {
+    try { await auth.fetchMe() } catch { /* token 失效由请求拦截器处理跳登录 */ }
   }
   if (to.meta.admin && !auth.isAdmin) {
     return { path: '/dashboard' }
