@@ -52,8 +52,12 @@ router.beforeEach(async (to) => {
   const auth = useAuthStore()
   const demo = useDemoStore()
   if (to.meta.public) return true
-  // 演示模式：全站可浏览（测试/演示用途），无需登录
-  if (demo.enabled) return true
+  // 演示模式：全站可浏览无需登录；但管理页仍按“演示身份”的角色控制，让登录页“切换管理员”有意义
+  if (demo.enabled) {
+    if (auth.isLogin && !auth.user) auth.restoreDemoUser() // 刷新/直达时从 localStorage 还原演示身份
+    if (to.meta.admin && !auth.isAdmin) return { path: '/dashboard' }
+    return true
+  }
   if ((to.meta.requiresAuth || to.meta.admin) && !auth.isLogin) {
     return { path: '/login', query: { redirect: to.fullPath } }
   }

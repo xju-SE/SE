@@ -15,7 +15,10 @@
         <div class="role-switch">
           <button :class="{ on: role === 'STUDENT' }" @click="role = 'STUDENT'">在校生</button>
           <button :class="{ on: role === 'ALUMNI' }" @click="role = 'ALUMNI'">毕业生</button>
+          <!-- 演示模式：额外提供“管理员”身份，一键切换进管理后台（含 mock 数据） -->
+          <button v-if="demo.enabled" :class="{ on: role === 'ADMIN' }" @click="role = 'ADMIN'">管理员</button>
         </div>
+        <p v-if="demo.enabled" class="role-demo-hint">演示模式：任意账号密码即可登录，选择身份体验对应视角</p>
 
         <div class="xj-field">
           <label class="xj-label">账号 / 学号</label>
@@ -76,7 +79,7 @@ const demo = useDemoStore()
 const started = ref(false)
 const ready = ref(false)
 const reduced = ref(false)
-const role = ref<'STUDENT' | 'ALUMNI'>('STUDENT')
+const role = ref<'STUDENT' | 'ALUMNI' | 'ADMIN'>('STUDENT')
 const form = reactive({ username: '', password: '' })
 const loading = ref(false)
 const showPwd = ref(false)
@@ -111,8 +114,8 @@ async function onSubmit() {
     if (demo.enabled) {
       // 演示模式：本地模拟登录成功，不触网（关闭演示模式后走真实后端）
       await new Promise((r) => setTimeout(r, 500))
-      auth.demoLogin(form.username)
-      ElMessage.success('欢迎回来（演示模式）')
+      auth.demoLogin(form.username, role.value)
+      ElMessage.success(role.value === 'ADMIN' ? '已以管理员身份进入（演示模式）' : '欢迎回来（演示模式）')
     } else {
       await auth.login(form.username, form.password)
     }
@@ -174,7 +177,8 @@ const XLoaderInline = () => h('span', { class: 'lc-spinner' })
 .lc-brand :deep(.xlogo) { margin: 0 auto; }
 .lc-title { margin: 0; text-align: center; font-size: 22px; font-weight: 850; color: var(--xj-ink); }
 .lc-sub { margin: 6px 0 18px; text-align: center; font-size: 12.5px; color: var(--xj-subtle); }
-.role-switch { display: flex; background: var(--xj-soft); border: 1px solid var(--xj-line); border-radius: 10px; padding: 4px; margin-bottom: 18px; }
+.role-switch { display: flex; background: var(--xj-soft); border: 1px solid var(--xj-line); border-radius: 10px; padding: 4px; margin-bottom: 8px; }
+.role-demo-hint { margin: 0 0 16px; font-size: 11px; color: var(--xj-subtle); text-align: center; line-height: 1.5; }
 .role-switch button { flex: 1; height: 34px; border: 0; background: transparent; border-radius: 7px; font-size: 13px; font-weight: 700; color: var(--xj-muted); cursor: pointer; transition: all var(--xj-fast); }
 .role-switch button.on { background: #fff; color: var(--xj-green-deep); box-shadow: 0 2px 8px rgba(15,30,53,.08); }
 .xj-field { margin-bottom: 14px; }

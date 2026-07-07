@@ -31,11 +31,21 @@ export const useAuthStore = defineStore('auth', {
       localStorage.setItem('refreshToken', data.refreshToken)
       await this.fetchMe()
     },
-    /** 演示模式登录：不触网，写入演示身份（管理员，保证全部页面含管理后台可演示） */
-    demoLogin(username?: string) {
+    /** 演示模式登录：不触网，按所选身份写入演示用户（可切在校生/毕业生/管理员），持久化以便刷新恢复 */
+    demoLogin(username?: string, role = 'STUDENT') {
       this.token = 'demo-token'
       localStorage.setItem('token', 'demo-token')
-      this.user = { userId: 1, username: username || '林一航', role: 'ADMIN', authStatus: 'VERIFIED' }
+      localStorage.setItem('demoRole', role)
+      const defaultNames: Record<string, string> = { ADMIN: '平台管理员', ALUMNI: '校友学长', STUDENT: '林一航' }
+      const name = username || defaultNames[role] || '演示用户'
+      localStorage.setItem('demoUser', name)
+      this.user = { userId: role === 'ADMIN' ? 99 : 1, username: name, role, authStatus: 'VERIFIED' }
+    },
+    /** 演示模式刷新/直达时从 localStorage 还原演示身份（无真实 /users/me 可调） */
+    restoreDemoUser() {
+      const role = localStorage.getItem('demoRole') || 'STUDENT'
+      const name = localStorage.getItem('demoUser') || '演示用户'
+      this.user = { userId: role === 'ADMIN' ? 99 : 1, username: name, role, authStatus: 'VERIFIED' }
     },
     async fetchMe() {
       this.user = (await authApi.me()) as UserInfo
@@ -45,6 +55,8 @@ export const useAuthStore = defineStore('auth', {
       this.user = null
       localStorage.removeItem('token')
       localStorage.removeItem('refreshToken')
+      localStorage.removeItem('demoRole')
+      localStorage.removeItem('demoUser')
     },
   },
 })
