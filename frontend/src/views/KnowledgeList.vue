@@ -1,7 +1,7 @@
 <template>
   <div class="search-page xj-scene-life">
-    <!-- 英雄横幅：检索背景全宽整图 + 中央大搜索框（固定高度,不随滚动折叠——之前的滚动折叠会改页面高度导致下滑卡顿） -->
-    <PageHero :bg="bgSearch" tone="life" size="tall" light>
+    <!-- 英雄横幅：检索背景按图片 3:1 比例完整显示(full-image,固定高度不随滚动折叠;contain 保证整图不裁切) -->
+    <PageHero :bg="bgSearch" tone="life" size="tall" light full-image :ratio="2.99">
       <div class="sh-row">
         <div class="sh-head">
           <h1 class="sh-title">探索无限可能</h1>
