@@ -46,7 +46,7 @@
           </div>
 
           <div class="xj-card side-card">
-            <div class="sc-head"><span class="sc-title">活跃日历</span><span class="sc-more">2026年7月</span></div>
+            <div class="sc-head"><span class="sc-title">活跃日历 <span class="demo-chip">演示</span></span><span class="sc-more">2026年7月</span></div>
             <div class="cal">
               <span class="cal-h" v-for="d in ['一','二','三','四','五','六','日']" :key="d">{{ d }}</span>
               <span v-for="c in calendar" :key="c.d" class="cal-d" :class="{ on: c.on, today: c.today }">{{ c.d }}</span>
@@ -93,7 +93,7 @@
         <!-- ===== 右栏：成就 + 标签 + 近期动态 + 设置/演示开关 ===== -->
         <aside class="col-stack">
           <div class="xj-card side-card">
-            <div class="sc-head"><span class="sc-title">个人成就</span><span class="sc-more">查看全部 ›</span></div>
+            <div class="sc-head"><span class="sc-title">个人成就 <span class="demo-chip">演示</span></span><span class="sc-more">查看全部 ›</span></div>
             <div class="ach">
               <div class="ach-item" v-for="b in badges" :key="b.name">
                 <span class="hex" :style="{ background: b.c }">{{ b.ic }}</span>
@@ -235,6 +235,8 @@ function toggleDemo() {
 
 <style scoped>
 .profile { padding-bottom: 50px; }
+/* 演示态标记：热力图/成就/日历等为示意数据,诚实标注,避免答辩误认为真实统计 */
+.demo-chip { font-size: 9.5px; font-weight: 700; color: var(--xj-subtle); background: var(--xj-soft); border: 1px solid var(--xj-line); border-radius: 5px; padding: 0 5px; vertical-align: middle; margin-left: 4px; }
 
 /* 横幅个人卡：X 雕塑背景在图右下角，需 min-height + right bottom 定位才不被裁掉 */
 .pf-hero { position: relative; overflow: hidden; color: #fff; min-height: 240px; display: flex; align-items: center; }

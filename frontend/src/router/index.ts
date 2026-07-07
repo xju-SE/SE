@@ -24,7 +24,21 @@ const routes = [
       { path: 'opportunities', component: () => import('../views/OpportunityList.vue'), meta: { requiresAuth: true } },
       { path: 'timeline', component: () => import('../views/Timeline.vue'), meta: { requiresAuth: true } },
       { path: 'notifications', component: () => import('../views/Notifications.vue'), meta: { requiresAuth: true } },
-      { path: 'admin/audit', component: () => import('../views/admin/AuditQueue.vue'), meta: { admin: true } },
+      // 身份认证申请（用户侧提交/查看）
+      { path: 'auth/apply', component: () => import('../views/AuthApply.vue'), meta: { requiresAuth: true } },
+    ],
+  },
+  // 管理后台：独立 AdminLayout 外壳（不再混在普通用户 MainLayout 里）
+  {
+    path: '/admin',
+    component: () => import('../layout/AdminLayout.vue'),
+    meta: { admin: true },
+    children: [
+      { path: '', redirect: '/admin/dashboard' },
+      { path: 'dashboard', component: () => import('../views/admin/AdminDashboard.vue') },
+      { path: 'audit', component: () => import('../views/admin/AuditQueue.vue') },
+      { path: 'reports', component: () => import('../views/admin/ReportManage.vue') },
+      { path: 'tags', component: () => import('../views/admin/TagManage.vue') },
     ],
   },
 ]

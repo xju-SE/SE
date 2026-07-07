@@ -117,7 +117,9 @@ async function onSubmit() {
       await auth.login(form.username, form.password)
     }
     if (remember.value) localStorage.setItem('lastUser', form.username)
-    router.push((route.query.redirect as string) || '/dashboard')
+    // 管理员登录后直接进管理后台；其余进双圈首页；有 redirect 优先
+    const dest = (route.query.redirect as string) || (auth.isAdmin ? '/admin' : '/dashboard')
+    router.push(dest)
   } catch {
     /* 拦截器已提示 */
   } finally {

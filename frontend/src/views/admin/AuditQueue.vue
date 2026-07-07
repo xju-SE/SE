@@ -1,6 +1,9 @@
 <template>
   <div class="aq-page xj-scene-study">
-    <PageHero :bg="heroBg" tone="study" size="mid" pos="right bottom" title="管理后台 · 审核队列" subtitle="统一处理知识候选与身份认证的终审" />
+    <div class="aq-head-bar">
+      <h1>审核队列</h1>
+      <p>统一处理知识候选、身份认证、贡献者认证与求助回答的终审</p>
+    </div>
     <div class="container">
       <!-- 运营统计卡片行 -->
       <div class="stat-row">
@@ -112,9 +115,7 @@ import { ElMessage } from 'element-plus'
 import { useDemoStore, loadOr } from '../../store/demo'
 import { adminApi } from '../../api'
 import XLoader from '../../components/XLoader.vue'
-import PageHero from '../../components/PageHero.vue'
 import emptyImg from '../../assets/states/empty.svg'
-import heroBg from '../../assets/bg/蓝色雕塑背景.png'
 import icDocument from '../../assets/icons/content/document.svg'
 import icSuccess from '../../assets/icons/status/success.svg'
 import icError from '../../assets/icons/status/error.svg'
@@ -302,6 +303,10 @@ onMounted(() => {
 
 <style scoped>
 .aq-page { padding: 26px 0 60px; }
+
+.aq-head-bar { padding: 0 0 4px; }
+.aq-head-bar h1 { margin: 0; font-size: 20px; font-weight: 800; color: var(--xj-ink); }
+.aq-head-bar p { margin: 4px 0 0; font-size: 13px; color: var(--xj-subtle); }
 
 .stat-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin: 22px 0; }
 .stat-tile { padding: 16px; display: flex; align-items: center; gap: 12px; }

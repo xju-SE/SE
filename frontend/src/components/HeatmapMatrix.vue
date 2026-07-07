@@ -2,7 +2,7 @@
   <!-- 贡献热力图（对照参考图"学业贡献热力图/生活圈活跃度"：月份横轴 + 周一/三/五纵轴 + 少→多色阶） -->
   <div class="hm">
     <div class="hm-head">
-      <div class="hm-title">{{ title }} <span class="hm-info">ⓘ</span></div>
+      <div class="hm-title">{{ title }} <span class="hm-demo" title="当前为示意分布，真实每日贡献统计规划中">演示</span></div>
       <slot name="right"><span class="hm-range">过去一年</span></slot>
     </div>
     <div class="hm-body">
@@ -74,6 +74,7 @@ function cellColor(w: number, d: number): string {
 .hm-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 13px; }
 .hm-title { font-size: 14.5px; font-weight: 800; color: var(--xj-ink); }
 .hm-info { color: var(--xj-subtle); font-weight: 400; font-size: 12px; }
+.hm-demo { font-size: 10px; font-weight: 700; color: var(--xj-subtle); background: var(--xj-soft); border: 1px solid var(--xj-line); border-radius: 5px; padding: 1px 5px; vertical-align: middle; }
 .hm-range { font-size: 12px; color: var(--xj-subtle); }
 .hm-body { display: flex; gap: 20px; align-items: stretch; }
 .hm-chart { flex: 1; min-width: 0; }

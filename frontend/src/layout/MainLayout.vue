@@ -32,7 +32,7 @@
         <transition name="fade-pop">
           <div v-if="menuOpen" class="user-menu" @click.stop>
             <router-link to="/profile" class="um-item" @click="menuOpen = false">个人中心</router-link>
-            <router-link v-if="auth.isAdmin || demo.enabled" to="/admin/audit" class="um-item" @click="menuOpen = false">管理后台</router-link>
+            <router-link v-if="auth.isAdmin || demo.enabled" to="/admin" class="um-item" @click="menuOpen = false">管理后台</router-link>
             <div class="um-sep"></div>
             <div v-if="auth.isLogin" class="um-item danger" @click="logout">退出登录</div>
             <router-link v-else to="/login" class="um-item" @click="menuOpen = false">登录 / 注册</router-link>

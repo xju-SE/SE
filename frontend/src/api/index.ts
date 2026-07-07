@@ -11,10 +11,21 @@ export const authApi = {
   login: (data: any) => request.post('/auth/login', data),
   // FS2：真实端点 /users/me（非 /auth/me），返回 UserDTO
   me: () => request.get('/users/me'),
-  // FS4：统一提交入口 POST /auth-applications，按 verifyMethod 分支携带不同字段
-  // （STUDENT_SSO/STUDENT_MANUAL/ALUMNI_INVITE_CODE/ALUMNI_MANUAL_GUARANTEE），
-  // 见 SubmitAuthApplicationRequest；当前无调用该接口的页面，先修正契约供后续接入。
-  submitStudentAuth: (data: any) => request.post('/auth-applications', data),
+}
+
+// 身份认证申请（用户侧提交 + 生命周期）。SubmitAuthApplicationRequest{verifyMethod,realName,studentNo,college,majorText,evidenceUrl,inviteCode,guarantor1Id,guarantor2Id}
+// AuthApplicationDTO{id,applyRole,verifyMethod,realName,studentNo,majorText,college,status,autoApproved,rejectReason,statusHint,createdAt}
+export const authApplicationApi = {
+  submit: (data: any) => request.post('/auth-applications', data),
+  mine: (params?: { status?: string; page?: number; size?: number }) => request.get('/auth-applications/me', { params }),
+  detail: (id: number) => request.get(`/auth-applications/${id}`),
+  withdraw: (id: number) => request.patch(`/auth-applications/${id}/withdraw`),
+  resubmit: (id: number, data: any) => request.patch(`/auth-applications/${id}/resubmit`, data),
+}
+
+// 贡献者认证申请（校友）：POST /contributor-cert-applications，ApplyContributorCertRequest{honorCertUrl,note}，落审核队列
+export const contributorCertApi = {
+  apply: (data: { honorCertUrl?: string; note?: string }) => request.post('/contributor-cert-applications', data),
 }
 
 // 标签只读查询（供各表单下拉 / 按 tagId 反查名称，tagType 为空返回全部）
@@ -82,12 +93,27 @@ export const notificationApi = {
 export const adminApi = {
   // FS10：真实路径 /audit-tasks（无 admin 前缀），返回 {records,total,page,size,countByType}
   auditList: (params: any) => request.get('/audit-tasks', { params }),
+  auditDetail: (id: number) => request.get(`/audit-tasks/${id}`),
   // FS11：approve/reject 均不存在，统一走 PATCH /audit-tasks/{id}/decide，decision=APPROVE/RETURN/REJECT
   decide: (
     id: number,
     decision: 'APPROVE' | 'RETURN' | 'REJECT',
     extra?: { reasonCode?: string; comment?: string; checklistResult?: any }
   ) => request.patch(`/audit-tasks/${id}/decide`, { decision, ...extra }),
+  // 批量审核：PATCH /audit-tasks/batch-decide，BatchDecideRequest{targetType,ids,decision,reasonCode?,comment?}
+  batchDecide: (data: { targetType?: string; ids: number[]; decision: 'APPROVE' | 'RETURN' | 'REJECT'; reasonCode?: string; comment?: string }) =>
+    request.patch('/audit-tasks/batch-decide', data),
+  // 举报处理：queue/detail/handle。ReportDTO{id,targetType,targetId,targetSummary,reporterName,reasonType,description,status,handleAction,handleComment,createdAt,handledAt}
+  reportQueue: (params: { status?: string; targetType?: string; page?: number; size?: number }) => request.get('/reports', { params }),
+  reportDetail: (id: number) => request.get(`/reports/${id}`),
+  // HandleReportRequest{decision,handleAction(NONE/CONTENT_HIDDEN/CONTENT_OFFLINE/USER_DISABLED),handleComment}
+  reportHandle: (id: number, data: { decision?: string; handleAction: string; handleComment?: string }) =>
+    request.patch(`/reports/${id}/handle`, data),
+  // 标签管理：分页(TagUsageDTO 含 usageCount) + 增改停用
+  tagPage: (params: { tagType?: string; keyword?: string; page?: number; size?: number }) => request.get('/admin/tags', { params }),
+  tagCreate: (data: { tagType: string; tagName: string; parentId?: number; sortOrder?: number }) => request.post('/admin/tags', data),
+  tagUpdate: (id: number, data: { tagName?: string; parentId?: number; sortOrder?: number }) => request.put(`/admin/tags/${id}`, data),
+  tagDisable: (id: number) => request.delete(`/admin/tags/${id}`),
   // FS12：真实端点 /admin/stats/overview，字段为 OperationOverviewDTO（authApprovedCount 等），
   // 与旧口径 pending/approvedToday/rejectedToday/avgAuditMinutes 完全不同，见该 DTO 注释。
   statsOverview: (params?: { dateFrom?: string; dateTo?: string }) =>

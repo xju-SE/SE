@@ -77,7 +77,8 @@
             </div>
 
             <!-- 资源概览横条：文件数/总大小/下载次数/收藏人数 四块彩色底 icon（对照“学业圈帖子”参考图） -->
-            <div class="kd-resbar-head">资源概览</div>
+            <!-- 注：以下四项为演示态展示数据，真实互动能力见下方“有用/已过时/需更新”三态评价 -->
+            <div class="kd-resbar-head">资源概览 <span class="kd-demo-chip">演示</span></div>
             <div class="kd-resbar">
               <div class="kd-res-cell">
                 <span class="kd-res-ic blue"><img :src="icDoc" class="ic" /></span>
@@ -363,6 +364,7 @@ onMounted(load)
 
 /* ---- 资源概览横条（主卡底部） ---- */
 .kd-resbar-head { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--xj-line); font-size: 13px; font-weight: 800; color: var(--xj-ink); }
+.kd-demo-chip { font-size: 9.5px; font-weight: 700; color: var(--xj-subtle); background: var(--xj-soft); border: 1px solid var(--xj-line); border-radius: 5px; padding: 0 5px; vertical-align: middle; margin-left: 4px; }
 .kd-resbar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
 .kd-res-cell { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--xj-line); border-radius: var(--xj-radius-md); background: var(--xj-soft); min-width: 0; }
 .kd-res-ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex: none; }
