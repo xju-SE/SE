@@ -1,26 +1,73 @@
 <template>
-  <!-- ===== 双圈首页 · 总入口（无 scene 时，对照素材"双圈首页"双入口结构） ===== -->
-  <div v-if="!sceneChosen" class="gate">
-    <div class="gate-panel life" :style="{ backgroundImage: `url(${gateLife})` }" @click="enter('life')">
-      <div class="gp-mask"></div>
-      <div class="gp-body">
-        <h2 class="gp-title">生活圈</h2>
-        <p class="gp-sub">发现校园生活，连接身边的人</p>
-        <div class="gp-chips"><span>生活经验</span><span>活动机会</span><span>兴趣同好</span></div>
-        <button class="gp-btn">进入生活圈 <img :src="icArrow" alt="" /></button>
+  <!-- ===== 双圈首页 · 总入口（对照 进入首页.png：上方分屏 banner + 下方三卡片） ===== -->
+  <div v-if="!sceneChosen" class="entry">
+    <section class="entry-hero">
+      <div class="eh-panel life" :style="{ backgroundImage: `url(${gateLife})` }" @click="enter('life')">
+        <div class="ehp-mask"></div>
+        <div class="ehp-body">
+          <h2 class="ehp-title">生活圈</h2>
+          <p class="ehp-sub">发现校园生活，连接身边的人</p>
+          <button class="ehp-btn life">进入生活圈 <img :src="icArrow" alt="" /></button>
+        </div>
+      </div>
+      <div class="eh-panel study" :style="{ backgroundImage: `url(${gateStudy})` }" @click="enter('study')">
+        <div class="ehp-mask"></div>
+        <div class="ehp-body">
+          <h2 class="ehp-title">学业圈</h2>
+          <p class="ehp-sub">共享学习资源，记录成长轨迹</p>
+          <button class="ehp-btn study">进入学业圈 <img :src="icArrow" alt="" /></button>
+        </div>
+      </div>
+    </section>
+
+    <div class="container entry-cards">
+      <!-- 生活圈动态 -->
+      <div class="xj-card ec-card">
+        <div class="ec-head">
+          <span class="ec-title"><span class="ec-dot life"><img :src="icFeed" alt="" /></span>生活圈动态</span>
+          <span class="ec-more" @click="enter('life')">更多 ›</span>
+        </div>
+        <div class="ec-life" v-for="p in lifePreview" :key="p.id" @click="enter('life')">
+          <img class="el-avatar" :src="avatarFor(p.author, p.avatarIdx)" alt="" />
+          <div class="el-main">
+            <div class="el-title">{{ p.title }} <span class="xj-badge success sm">{{ p.tag }}</span></div>
+            <div class="el-meta">{{ p.author }} · {{ p.time }}</div>
+          </div>
+          <img v-if="p.images.length" class="el-thumb" :src="p.images[0]" alt="" />
+        </div>
+      </div>
+
+      <!-- 学业圈推荐 -->
+      <div class="xj-card ec-card">
+        <div class="ec-head">
+          <span class="ec-title"><span class="ec-dot study"><img :src="icResources" alt="" /></span>学业圈推荐</span>
+          <span class="ec-more" @click="enter('study')">更多 ›</span>
+        </div>
+        <div class="ec-study" v-for="(p, i) in studyPreview" :key="p.id" @click="enter('study')">
+          <span class="es-icon" :class="studyIconClass(i)"><img :src="studyIcon(i)" alt="" /></span>
+          <div class="es-main">
+            <div class="es-title"><span class="es-title-txt">{{ p.title }}</span><span v-if="i === 0" class="es-new">NEW</span></div>
+            <div class="es-meta">{{ p.author }} · {{ p.a }} 收藏</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 快捷入口 / 通知 -->
+      <div class="xj-card ec-card">
+        <div class="ec-head"><span class="ec-title"><span class="ec-dot mix"><img :src="icBell" alt="" /></span>快捷入口 / 通知</span></div>
+        <div class="ec-quick">
+          <button class="eq-item" v-for="q in quickEntries" :key="q.label" @click="$router.push(q.to)">
+            <span class="eq-ic" :class="q.cls"><img :src="q.icon" alt="" /></span>
+            <span class="eq-label">{{ q.label }}</span>
+          </button>
+        </div>
+        <div class="ec-noti" v-for="n in notiPreview" :key="n.id" @click="$router.push('/notifications')">
+          <span class="en-ic"><img :src="icBell" alt="" /></span>
+          <div class="en-main"><div class="en-title">{{ n.title }}</div><div class="en-meta">{{ n.content }}</div></div>
+          <span class="en-time">{{ n.time }}</span>
+        </div>
       </div>
     </div>
-    <div class="gate-mark"><img :src="markUrl" alt="XJOURNEY" /></div>
-    <div class="gate-panel study" :style="{ backgroundImage: `url(${gateStudy})` }" @click="enter('study')">
-      <div class="gp-mask"></div>
-      <div class="gp-body">
-        <h2 class="gp-title">学业圈</h2>
-        <p class="gp-sub">共享学习资源，记录成长轨迹</p>
-        <div class="gp-chips"><span>经验知识库</span><span>结构化求助</span><span>成长时间线</span></div>
-        <button class="gp-btn">进入学业圈 <img :src="icArrow" alt="" /></button>
-      </div>
-    </div>
-    <div class="gate-welcome">欢迎回来，{{ me.username }} · 今天想从哪个圈开始？</div>
   </div>
 
   <!-- ===== 圈内信息流（选圈后） ===== -->
@@ -175,7 +222,6 @@ import bgLife from '../assets/bg/生活圈背景.png'
 import bgStudy from '../assets/bg/学业圈首页背景.png'
 import gateLife from '../assets/bg/双圈首页生活圈背景.png'
 import gateStudy from '../assets/bg/双圈首页学业圈背景.png'
-import markUrl from '../assets/brand/mark.svg'
 import icArrow from '../assets/icons/actions/arrow-right.svg'
 // UI Kit 正式图标（<img> 引用，替换全部手绘内联 svg）
 import icPlus from '../assets/icons/actions/plus.svg'
@@ -183,6 +229,10 @@ import icComment from '../assets/icons/actions/comment.svg'
 import icResources from '../assets/icons/navigation/resources.svg'
 import icActivity from '../assets/icons/navigation/activity.svg'
 import icCalendar from '../assets/icons/actions/calendar.svg'
+import icFeed from '../assets/icons/navigation/feed.svg'
+import icProfile from '../assets/icons/navigation/profile.svg'
+import icDocument from '../assets/icons/content/document.svg'
+import icCode from '../assets/icons/content/code.svg'
 import icHeart from '../assets/icons/actions/heart.svg'
 import icLink from '../assets/icons/actions/link.svg'
 import icEye from '../assets/icons/actions/eye.svg'
@@ -203,6 +253,23 @@ function enter(s: 'life' | 'study') {
 const heroBg = computed(() => (isLife.value ? bgLife : bgStudy))
 const me = computed(() => ({ username: auth.user?.username || demoMe.username, grade: demoMe.grade, major: demoMe.major }))
 const meAvatar = computed(() => avatarFor(me.value.username, 9))
+
+// ===== 双圈总入口下方三卡片的预览数据（均来自演示数据，映射后端真实模块） =====
+const lifePreview = demoLifeFeed.slice(0, 3)
+const studyPreview = demoStudyFeed.filter((p) => p.source === '知识库').slice(0, 3)
+const notiPreview = demoNotifications.slice(0, 2)
+const STUDY_ICONS = [icDocument, icResources, icCode]
+const STUDY_ICON_CLS = ['blue', 'orange', 'green']
+const studyIcon = (i: number) => STUDY_ICONS[i % STUDY_ICONS.length]
+const studyIconClass = (i: number) => STUDY_ICON_CLS[i % STUDY_ICON_CLS.length]
+// 快捷入口：标签与真实路由绑定（我们真实有的模块，不臆造）
+const quickEntries = [
+  { label: '经验知识库', to: '/knowledge', icon: icResources, cls: 'blue' },
+  { label: '结构化求助', to: '/help', icon: icComment, cls: 'green' },
+  { label: '机会组队', to: '/opportunities', icon: icActivity, cls: 'purple' },
+  { label: '成长时间线', to: '/timeline', icon: icCalendar, cls: 'orange' },
+  { label: '成长画像', to: '/profile', icon: icProfile, cls: 'teal' },
+]
 const stats = computed(() => (isLife.value ? demoMe.statsLife : demoMe.statsStudy))
 const tabs = computed(() => (isLife.value
   ? ['全部', '校园分享', '活动招募', '兴趣社团', '生活攻略', '摄影']
@@ -277,37 +344,84 @@ const viewsOf = (p: any) => p.views ?? p.a * 7 + p.b
 /* 连续进度勾选：CSS 描边对勾（替换手绘 svg），生活/学业圈各自品牌色 */
 .streak-dot.done::after { content: ""; width: 6px; height: 11px; border: solid #fff; border-width: 0 3px 3px 0; transform: rotate(45deg); margin-top: -2px; }
 
-/* ===== 双圈首页 · 总入口 ===== */
-.gate { position: relative; display: flex; min-height: calc(100vh - 64px); overflow: hidden; }
-.gate-panel { position: relative; flex: 1; background-size: cover; background-position: center; cursor: pointer; display: flex; align-items: flex-end;
-  transition: flex 0.55s cubic-bezier(.22,.8,.2,1); }
-.gate:hover .gate-panel { flex: 0.82; }
-.gate .gate-panel:hover { flex: 1.5; }
-.gp-mask { position: absolute; inset: 0; transition: opacity .4s; }
-.gate-panel.life .gp-mask { background: linear-gradient(185deg, rgba(16,140,74,.06) 30%, rgba(12,110,60,.78) 100%); }
-.gate-panel.study .gp-mask { background: linear-gradient(185deg, rgba(23,72,183,.06) 30%, rgba(18,52,130,.8) 100%); }
-.gate-panel:hover .gp-mask { opacity: .88; }
-.gp-body { position: relative; z-index: 2; padding: 0 8% 9vh; color: #fff; }
-.gp-title { margin: 0; font-size: clamp(38px, 4.6vw, 58px); font-weight: 850; letter-spacing: 6px; text-shadow: 0 4px 26px rgba(8,20,38,.35); }
-.gp-sub { margin: 12px 0 18px; font-size: 16.5px; opacity: .96; font-weight: 500; }
-.gp-chips { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 24px; }
-.gp-chips span { height: 30px; padding: 0 14px; display: inline-flex; align-items: center; border-radius: 999px; font-size: 12.5px; font-weight: 650;
-  background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.45); backdrop-filter: blur(3px); }
-.gp-btn { height: 46px; padding: 0 24px; border: 0; border-radius: 12px; background: #fff; font-size: 14.5px; font-weight: 800; cursor: pointer;
-  display: inline-flex; align-items: center; gap: 9px; transition: transform .2s var(--xj-ease), box-shadow .2s; box-shadow: 0 10px 28px rgba(8,20,38,.25); }
-.gate-panel.life .gp-btn { color: var(--xj-green-deep); }
-.gate-panel.study .gp-btn { color: var(--xj-blue-deep); }
-.gp-btn img { width: 16px; height: 16px; }
-.gate-panel:hover .gp-btn { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(8,20,38,.35); }
-.gate-mark { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 5; width: 86px; height: 86px; border-radius: 50%;
-  background: #fff; box-shadow: 0 14px 44px rgba(8,20,38,.28); display: grid; place-items: center; pointer-events: none; }
-.gate-mark img { width: 46px; height: 46px; }
-.gate-welcome { position: absolute; top: 26px; left: 50%; transform: translateX(-50%); z-index: 5; color: #fff; font-size: 13.5px; font-weight: 650;
-  padding: 9px 22px; border-radius: 999px; background: rgba(8,20,38,.34); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,.25); white-space: nowrap; }
+/* ===== 双圈首页 · 总入口（对照 进入首页.png） ===== */
+.entry { padding-bottom: 40px; }
+/* 上方分屏 banner（非全屏），直分割线 + 底部圆角 */
+.entry-hero { display: flex; height: clamp(400px, 52vh, 560px); overflow: hidden; }
+.eh-panel { position: relative; flex: 1; background-size: cover; background-position: center; cursor: pointer; display: flex; align-items: center;
+  transition: flex .5s cubic-bezier(.22,.8,.2,1); }
+.entry-hero:hover .eh-panel { flex: .9; }
+.entry-hero .eh-panel:hover { flex: 1.22; }
+.ehp-mask { position: absolute; inset: 0; transition: opacity .4s; }
+.eh-panel.life .ehp-mask { background: linear-gradient(120deg, rgba(12,110,60,.34), rgba(16,140,74,.16) 46%, rgba(16,140,74,.05)); }
+.eh-panel.study .ehp-mask { background: linear-gradient(120deg, rgba(18,52,130,.36), rgba(23,72,183,.17) 46%, rgba(23,72,183,.05)); }
+.eh-panel:hover .ehp-mask { opacity: .8; }
+.ehp-body { position: relative; z-index: 2; padding: 0 clamp(30px, 6%, 92px); color: #fff; }
+.ehp-title { margin: 0; font-size: clamp(40px, 4.4vw, 62px); font-weight: 850; letter-spacing: 8px; text-shadow: 0 4px 30px rgba(8,20,38,.4); }
+.ehp-sub { margin: 14px 0 26px; font-size: clamp(15px, 1.4vw, 19px); font-weight: 500; text-shadow: 0 2px 14px rgba(8,20,38,.35); }
+.ehp-btn { height: 50px; padding: 0 28px; border: 0; border-radius: 12px; background: #fff; font-size: 15px; font-weight: 800; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 12px 34px rgba(8,20,38,.28); transition: transform .2s var(--xj-ease), box-shadow .2s; }
+.ehp-btn.life { color: var(--xj-green-deep); }
+.ehp-btn.study { color: var(--xj-blue-deep); }
+.ehp-btn img { width: 17px; height: 17px; }
+.eh-panel:hover .ehp-btn { transform: translateY(-3px); box-shadow: 0 18px 44px rgba(8,20,38,.36); }
+
+/* 下方三卡片行 */
+.entry-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: -34px; position: relative; z-index: 3; }
+.ec-card { padding: 20px 22px; }
+.ec-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.ec-title { display: flex; align-items: center; gap: 10px; font-size: 15.5px; font-weight: 820; color: var(--xj-ink); }
+.ec-dot { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; flex: none; }
+.ec-dot img { width: 17px; height: 17px; }
+.ec-dot.life { background: #E9F9EF; } .ec-dot.study { background: #EAF2FF; } .ec-dot.mix { background: #FFF5DE; }
+.ec-more { font-size: 12.5px; color: var(--xj-subtle); cursor: pointer; font-weight: 650; }
+.ec-more:hover { color: var(--xj-green-deep); }
+
+/* 生活圈动态项 */
+.ec-life { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-top: 1px solid var(--xj-line); cursor: pointer; }
+.ec-life:hover .el-title { color: var(--xj-green-deep); }
+.el-avatar { width: 38px; height: 38px; border-radius: 50%; flex: none; }
+.el-main { flex: 1; min-width: 0; }
+.el-title { font-size: 13.5px; font-weight: 700; color: var(--xj-ink); display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.el-meta { font-size: 11.5px; color: var(--xj-subtle); margin-top: 3px; }
+.el-thumb { width: 52px; height: 40px; border-radius: 8px; object-fit: cover; flex: none; }
+.xj-badge.sm { font-size: 10px; padding: 1px 6px; }
+
+/* 学业圈推荐项 */
+.ec-study { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-top: 1px solid var(--xj-line); cursor: pointer; }
+.ec-study:hover .es-title { color: var(--xj-blue-deep); }
+.es-icon { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; flex: none; }
+.es-icon img { width: 21px; height: 21px; }
+.es-icon.blue { background: #EAF2FF; } .es-icon.orange { background: #FFF2DC; } .es-icon.green { background: #E9F9EF; }
+.es-main { flex: 1; min-width: 0; }
+.es-title { font-size: 13.5px; font-weight: 700; color: var(--xj-ink); display: flex; align-items: center; gap: 7px; min-width: 0; }
+.es-title-txt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.es-new { font-size: 9.5px; font-weight: 800; color: #fff; background: linear-gradient(135deg,#22C55E,#04BFA5); padding: 1px 6px; border-radius: 5px; letter-spacing: .5px; flex: none; }
+.es-meta { font-size: 11.5px; color: var(--xj-subtle); margin-top: 3px; }
+
+/* 快捷入口网格 */
+.ec-quick { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 4px 0 14px; border-top: 1px solid var(--xj-line); }
+.eq-item { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 12px 2px; border: 0; background: transparent; border-radius: 12px; cursor: pointer; transition: background var(--xj-fast); }
+.eq-item:hover { background: var(--xj-soft); }
+.eq-ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; }
+.eq-ic img { width: 20px; height: 20px; }
+.eq-ic.blue { background: #EAF2FF; } .eq-ic.green { background: #E9F9EF; } .eq-ic.purple { background: #F1ECFF; } .eq-ic.orange { background: #FFF2DC; } .eq-ic.teal { background: #E1F7F3; }
+.eq-label { font-size: 11px; color: var(--xj-muted); font-weight: 600; text-align: center; line-height: 1.2; }
+
+/* 系统通知行 */
+.ec-noti { display: flex; align-items: center; gap: 11px; padding: 11px 0; border-top: 1px solid var(--xj-line); cursor: pointer; }
+.ec-noti:hover .en-title { color: var(--xj-green-deep); }
+.en-ic { width: 32px; height: 32px; border-radius: 9px; background: #FFF5DE; display: grid; place-items: center; flex: none; }
+.en-ic img { width: 17px; height: 17px; }
+.en-main { flex: 1; min-width: 0; }
+.en-title { font-size: 12.5px; font-weight: 700; color: var(--xj-ink); }
+.en-meta { font-size: 11px; color: var(--xj-subtle); margin-top: 2px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.en-time { font-size: 11px; color: var(--xj-subtle); flex: none; }
+
 @media (max-width: 900px) {
-  .gate { flex-direction: column; }
-  .gate:hover .gate-panel, .gate .gate-panel:hover { flex: 1; }
-  .gate-mark { display: none; }
-  .gp-body { padding: 0 7% 7vh; }
+  .entry-hero { flex-direction: column; height: auto; }
+  .eh-panel { min-height: 240px; }
+  .entry-hero:hover .eh-panel, .entry-hero .eh-panel:hover { flex: 1; }
+  .entry-cards { grid-template-columns: 1fr; margin-top: 18px; }
 }
 </style>

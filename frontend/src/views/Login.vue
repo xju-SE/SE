@@ -181,7 +181,9 @@ const XLoaderInline = () => h('span', { class: 'lc-spinner' })
 
 /* 会移动的 Logo */
 .brand-logo { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 30;
-  transition: all .65s cubic-bezier(.22,1,.36,1); display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  transition: all .65s cubic-bezier(.22,1,.36,1); display: flex; flex-direction: column; align-items: center; gap: 20px; }
+/* 入口（未开始）：巨幅品牌 Logo，对照 P1 关键帧占屏约一半宽；宽度驱动 + 视口上限防溢出 */
+.brand-logo.clickable :deep(.logo-full) { width: min(1240px, 86vw); height: auto !important; filter: drop-shadow(0 18px 46px rgba(8,20,38,.12)); }
 .brand-logo.clickable { cursor: pointer; }
 .brand-logo.clickable:hover { transform: translate(-50%, -50%) scale(1.03); filter: drop-shadow(0 12px 30px rgba(8,20,38,.14)); }
 .started .brand-logo { top: 96px; left: 8%; transform: translate(0, 0); }

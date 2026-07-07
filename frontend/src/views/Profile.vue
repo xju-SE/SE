@@ -236,12 +236,12 @@ function toggleDemo() {
 <style scoped>
 .profile { padding-bottom: 50px; }
 
-/* 横幅个人卡 */
-.pf-hero { position: relative; overflow: hidden; color: #fff; }
-.pf-bg { position: absolute; inset: 0; background-size: cover; background-position: center right; }
+/* 横幅个人卡：X 雕塑背景在图右下角，需 min-height + right bottom 定位才不被裁掉 */
+.pf-hero { position: relative; overflow: hidden; color: #fff; min-height: 240px; display: flex; align-items: center; }
+.pf-bg { position: absolute; inset: 0; background-size: cover; background-position: right bottom; }
 .pf-mask { position: absolute; inset: 0; }
-.pf-hero.study .pf-mask { background: linear-gradient(95deg, rgba(234,242,255,.96) 0%, rgba(219,234,255,.82) 26%, rgba(198,221,255,.3) 50%, rgba(255,255,255,0) 72%); }
-.pf-hero.life .pf-mask { background: linear-gradient(95deg, rgba(233,249,239,.96) 0%, rgba(213,242,224,.82) 26%, rgba(186,232,204,.3) 50%, rgba(255,255,255,0) 72%); }
+.pf-hero.study .pf-mask { background: linear-gradient(95deg, rgba(234,242,255,.95) 0%, rgba(219,234,255,.72) 28%, rgba(198,221,255,.22) 52%, rgba(255,255,255,0) 74%); }
+.pf-hero.life .pf-mask { background: linear-gradient(95deg, rgba(233,249,239,.95) 0%, rgba(213,242,224,.72) 28%, rgba(186,232,204,.22) 52%, rgba(255,255,255,0) 74%); }
 .pf-inner { position: relative; z-index: 2; display: flex; align-items: center; gap: 26px; padding-top: 34px; padding-bottom: 34px; }
 .pf-avatar { width: 128px; height: 128px; border-radius: 50%; border: 5px solid #fff; box-shadow: 0 10px 30px rgba(8,20,38,.18); object-fit: cover; flex: none; }
 .pf-id { flex: 1; min-width: 0; color: var(--xj-ink); }

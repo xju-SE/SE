@@ -56,16 +56,18 @@
               <span class="xj-badge" :class="statusMeta(t.status).badge">{{ statusMeta(t.status).label }}</span>
             </div>
             <h3 class="fc-title" @click="router.push('/help/' + t.id)">{{ t.title }}</h3>
-            <p class="fc-excerpt">{{ t.content }}</p>
+            <p class="fc-excerpt clamp2">{{ t.content }}</p>
             <div class="fc-tags">
-              <span class="fc-tag">{{ tagName(t.majorTagId) }}</span>
-              <span v-if="gradeLabel(t.gradeLevel)" class="fc-tag">{{ gradeLabel(t.gradeLevel) }}</span>
-              <span v-if="t.targetDirection" class="fc-tag">{{ t.targetDirection }}</span>
+              <span class="fc-tag primary"># {{ tagName(t.questionTypeTagId) }}</span>
+              <span v-if="t.targetDirection" class="fc-tag"># 目标 · {{ t.targetDirection }}</span>
             </div>
-            <div class="fc-actions">
-              <span class="fc-act"><img :src="icComment" class="ic" /> {{ t.answerCount ?? 0 }} 回答 · {{ t.followupCount ?? 0 }} 追问</span>
+            <div class="fc-foot">
+              <div class="fc-stats">
+                <span class="fc-stat"><img :src="icComment" class="ic" /> {{ t.answerCount ?? 0 }} <em>回答</em></span>
+                <span class="fc-stat"><img :src="icEdit" class="ic" /> {{ t.followupCount ?? 0 }} <em>追问</em></span>
+              </div>
               <button class="fc-answer-btn" type="button" @click="router.push('/help/' + t.id)">
-                <img :src="icComment" class="ic" /> 去回答
+                去回答 <img :src="icArrowRight" class="ic" />
               </button>
             </div>
           </article>
@@ -96,6 +98,8 @@ import icComment from '../assets/icons/actions/comment.svg'
 import icClock from '../assets/icons/actions/clock.svg'
 import icSuccess from '../assets/icons/status/success.svg'
 import icSort from '../assets/icons/actions/sort.svg'
+import icEdit from '../assets/icons/actions/edit.svg'
+import icArrowRight from '../assets/icons/actions/arrow-right.svg'
 
 const router = useRouter()
 const demo = useDemoStore()
@@ -245,9 +249,10 @@ onMounted(() => {
 
 .feed-sort .ic { width: 14px; height: 14px; }
 
-/* 卡片左侧状态色条 */
-.feed-card { position: relative; padding-left: 26px; overflow: hidden; }
-.fc-status-bar { position: absolute; left: 0; top: 10px; bottom: 10px; width: 4px; border-radius: 3px; }
+/* 卡片：左侧状态色条 + hover 抬升 */
+.feed-card { position: relative; padding: 18px 20px 16px 26px; overflow: hidden; transition: transform var(--xj-fast) var(--xj-ease), box-shadow var(--xj-fast); }
+.feed-card:hover { transform: translateY(-2px); box-shadow: var(--xj-shadow-float); }
+.fc-status-bar { position: absolute; left: 0; top: 12px; bottom: 12px; width: 4px; border-radius: 3px; }
 .fc-status-bar.progress { background: var(--xj-blue); }
 .fc-status-bar.adopted { background: var(--xj-green); }
 .fc-status-bar.closed { background: #B7C2D0; }
@@ -255,16 +260,28 @@ onMounted(() => {
 /* 作者行：专业 · 年级 次行 */
 .a-sub { font-size: 11.5px; color: var(--xj-muted); margin-top: 2px; font-weight: 600; }
 
-.fc-actions { justify-content: space-between; }
-.fc-act { display: flex; align-items: center; gap: 6px; }
-.fc-act .ic { width: 16px; height: 16px; }
+/* 摘要 2 行截断 */
+.fc-excerpt.clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.62; }
 
-/* 卡右下"去回答" ghost 按钮 */
-.fc-answer-btn { height: 28px; padding: 0 13px; border-radius: 999px; border: 1px solid #D0E1FF; background: #F5F9FF;
-  color: var(--xj-blue-deep); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;
-  cursor: pointer; transition: all var(--xj-fast); flex: none; }
-.fc-answer-btn:hover { background: #EAF2FF; border-color: #A7C8FF; transform: translateY(-1px); }
-.fc-answer-btn .ic { width: 14px; height: 14px; }
+/* 标签：品牌浅蓝，不再用灰色，且不与作者行重复（问题类型 + 目标方向） */
+.fc-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.fc-tag { height: 26px; padding: 0 11px; display: inline-flex; align-items: center; border-radius: 8px; font-size: 12px; font-weight: 650;
+  background: #F1F5FB; color: var(--xj-muted); border: 1px solid var(--xj-line); }
+.fc-tag.primary { background: #EAF2FF; color: var(--xj-blue-deep); border-color: #D3E3FF; }
+
+/* 底部：左统计 右去回答按钮 */
+.fc-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--xj-line); }
+.fc-stats { display: flex; gap: 20px; }
+.fc-stat { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 750; color: var(--xj-ink); }
+.fc-stat .ic { width: 16px; height: 16px; opacity: .8; }
+.fc-stat em { font-style: normal; font-size: 12px; font-weight: 500; color: var(--xj-subtle); }
+
+/* 去回答主按钮 */
+.fc-answer-btn { height: 34px; padding: 0 18px; border-radius: 999px; border: 0; background: linear-gradient(135deg, #2F7DF6, #1E6FE0);
+  color: #fff; font-size: 13px; font-weight: 750; display: inline-flex; align-items: center; gap: 7px;
+  cursor: pointer; transition: all var(--xj-fast); flex: none; box-shadow: 0 6px 16px rgba(37,99,235,.26); }
+.fc-answer-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 22px rgba(37,99,235,.34); }
+.fc-answer-btn .ic { width: 14px; height: 14px; filter: brightness(0) invert(1); }
 
 @media (max-width: 720px) {
   .help-stats { flex-direction: column; gap: 14px; }

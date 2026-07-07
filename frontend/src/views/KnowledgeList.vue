@@ -1,7 +1,7 @@
 <template>
   <div class="search-page xj-scene-life">
     <!-- 英雄横幅：检索背景 + 中央大搜索框（对照参考图「检索界面」） -->
-    <PageHero :bg="bgSearch" tone="life" size="tall">
+    <PageHero :bg="bgSearch" tone="life" size="tall" light>
       <div class="sh-row">
         <div class="sh-head">
           <h1 class="sh-title">探索无限可能</h1>
@@ -316,8 +316,9 @@ onMounted(() => {
 /* ---------- 英雄横幅内嵌大搜索框 ---------- */
 .sh-row { display: flex; align-items: center; gap: 30px; width: 100%; }
 .sh-head { flex: none; }
-.sh-title { margin: 0; font-size: clamp(26px, 3.2vw, 38px); font-weight: 850; letter-spacing: 2px; text-shadow: 0 3px 18px rgba(8, 20, 38, .28); }
-.sh-sub { margin: 9px 0 0; font-size: 14.5px; opacity: .95; font-weight: 500; }
+/* 浅底薄纱页头：标题用深色（对照检索界面参考图，图整幅可见） */
+.sh-title { margin: 0; font-size: clamp(26px, 3.2vw, 38px); font-weight: 850; letter-spacing: 2px; color: var(--xj-green-deep); }
+.sh-sub { margin: 9px 0 0; font-size: 14.5px; color: var(--xj-muted); font-weight: 600; }
 .sh-search { flex: 1; max-width: 640px; margin: 0 auto; height: 58px; background: #fff; border-radius: 999px; display: flex; align-items: center; gap: 12px; padding: 0 8px 0 22px; box-shadow: 0 18px 44px rgba(8, 20, 38, .2); }
 .sh-search-ic { width: 22px; height: 22px; flex: none; }
 .sh-input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font-size: 15px; color: var(--xj-text); }

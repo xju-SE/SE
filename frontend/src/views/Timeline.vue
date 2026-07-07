@@ -30,7 +30,20 @@
           <div class="ps-text">暂无时间线节点</div>
           <div class="ps-sub">切换路线试试，或稍后再来看看</div>
         </div>
-        <div v-else class="tl-layout">
+        <template v-else>
+          <!-- 成长曲线全景（用曲线表示时间线，对照品牌 Journey 曲线视觉） -->
+          <div class="xj-card study tl-curve-card">
+            <div class="tl-curve-head">
+              <div>
+                <div class="tl-curve-title">成长曲线</div>
+                <div class="tl-curve-sub">{{ currentRouteLabel }} · 已完成 {{ overall.doneNodes }} / {{ overall.totalNodes }} 节点 · {{ overall.percentage }}%</div>
+              </div>
+              <div class="tl-curve-pct"><b>{{ overall.percentage }}</b><span>%</span></div>
+            </div>
+            <GrowthTimelineCurve :nodes="nodes" accent="#2563EB" accent-deep="#1748B7" @select="scrollToNode" />
+          </div>
+
+          <div class="tl-layout">
           <!-- 左栏：路线概览侧栏卡 -->
           <aside class="tl-side">
             <div class="xj-card study tl-side-card">
@@ -67,7 +80,7 @@
                 :color="isOverdue(node) ? '#EF4444' : undefined"
                 :class="nodeStateClass(node)"
               >
-                <div class="xj-card study tl-card" :class="{ overdue: isOverdue(node) }">
+                <div :id="'tlnode-' + i" class="xj-card study tl-card" :class="{ overdue: isOverdue(node) }">
                   <div class="tl-top">
                     <h3 class="tl-title" :class="{ overdue: isOverdue(node) }">{{ node.title }}</h3>
                     <span class="xj-badge" :class="importanceBadge(node.importance)">{{ importanceLabel(node.importance) }}</span>
@@ -100,7 +113,8 @@
               </el-timeline-item>
             </el-timeline>
           </div>
-        </div>
+          </div>
+        </template>
       </template>
     </div>
   </div>
@@ -114,6 +128,7 @@ import { demoExperiences } from '../mock/demoData'
 import { timelineApi } from '../api'
 import XLoader from '../components/XLoader.vue'
 import PageHero from '../components/PageHero.vue'
+import GrowthTimelineCurve from '../components/GrowthTimelineCurve.vue'
 import emptyImg from '../assets/states/empty.svg'
 import heroBg from '../assets/bg/学业圈首页背景.png'
 import icCalendar from '../assets/icons/actions/calendar.svg'
@@ -169,6 +184,11 @@ const overdueIconBg = computed(() => `url(${icWarning})`)
 const RESOURCE_HINTS = ['3份资料 · 2条经验', '5份资料 · 1条经验', '2份资料 · 3条经验', '4份资料 · 2条经验']
 function resourceHint(i: number) { return RESOURCE_HINTS[i % RESOURCE_HINTS.length] }
 function onResourceHint() { ElMessage.info('关联资源清单整理中，敬请期待') }
+// 点击曲线节点 → 平滑滚动到对应节点卡
+function scrollToNode(i: number) {
+  const el = document.getElementById('tlnode-' + i)
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+}
 function nodeStateClass(node: any) {
   if (node.progressStatus === 'DONE') return 'tl-item-done'
   if (isOverdue(node)) return 'tl-item-overdue'
@@ -299,6 +319,15 @@ onMounted(load)
 .route-seg-item.active { background: #fff; color: var(--accent-deep); box-shadow: var(--xj-shadow-card); }
 .route-seg-item:disabled { cursor: not-allowed; opacity: .55; }
 .route-seg-item.active:disabled { opacity: 1; }
+
+/* ---------- 成长曲线全景卡 ---------- */
+.tl-curve-card { padding: 20px 22px 14px; margin-bottom: 22px; }
+.tl-curve-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.tl-curve-title { font-size: 16px; font-weight: 850; color: var(--xj-ink); }
+.tl-curve-sub { font-size: 12.5px; color: var(--xj-muted); margin-top: 3px; }
+.tl-curve-pct { display: flex; align-items: baseline; gap: 2px; }
+.tl-curve-pct b { font-size: 30px; font-weight: 850; color: var(--xj-blue); line-height: 1; font-variant-numeric: tabular-nums; }
+.tl-curve-pct span { font-size: 14px; font-weight: 800; color: var(--xj-blue); }
 
 /* ---------- 两栏布局：左路线概览 + 右进度/时间线 ---------- */
 .tl-layout { display: grid; grid-template-columns: 270px 1fr; gap: 22px; align-items: start; }
