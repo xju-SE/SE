@@ -1,135 +1,193 @@
 <template>
   <div class="help-page xj-scene-study">
-    <div class="container help-container detail">
+    <!-- 英雄横幅：生活圈背景 + 蓝色渐变（学业圈求助）+ 面包屑 -->
+    <PageHero :bg="heroBg" tone="study" size="low" :crumbs="['学业圈', '求助详情']" />
+
+    <div class="container hd-wrap">
       <XLoader v-if="loading" :size="52" text="加载中…" />
 
       <template v-else-if="ticket">
         <div class="back-link" @click="router.push('/help')">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 18l-6-6 6-6" /></svg>
-          返回求助列表
+          <img :src="icArrow" class="ic sm back-ic" /> 返回求助列表
         </div>
 
-        <!-- 求助单头部 -->
-        <section class="xj-card ticket-card">
-          <div class="tk-top">
-            <span class="xj-badge" :class="statusMeta(ticket.status).badge">{{ statusMeta(ticket.status).label }}</span>
-            <span class="tk-time">{{ ticket.createdAt || '' }}</span>
+        <div class="hd-grid">
+          <!-- ===== 主列 ===== -->
+          <div class="hd-main">
+            <!-- 求助单主卡 -->
+            <section class="xj-card study ticket-card">
+              <div class="tk-top">
+                <span class="xj-badge" :class="statusMeta(ticket.status).badge">{{ statusMeta(ticket.status).label }}</span>
+                <span class="tk-time">{{ ticket.createdAt || '' }}</span>
+              </div>
+              <h1 class="tk-title">{{ ticket.title }}</h1>
+              <div class="tk-asker">
+                <img class="xj-avatar" :src="avatarFor(ticket.askerName, ticket.id)" alt="" />
+                <div class="tk-asker-main">
+                  <div class="tk-asker-name">{{ ticket.askerName || '匿名求助人' }}</div>
+                  <div class="tk-asker-sub">求助人 · {{ tagName(ticket.majorTagId) }}</div>
+                </div>
+              </div>
+              <div class="tk-tags">
+                <span v-if="gradeLabel(ticket.gradeLevel)" class="fc-tag">{{ gradeLabel(ticket.gradeLevel) }}</span>
+                <span class="fc-tag">{{ tagName(ticket.questionTypeTagId) }}</span>
+                <span v-if="ticket.targetDirection" class="fc-tag">目标方向 · {{ ticket.targetDirection }}</span>
+              </div>
+              <p class="tk-content">{{ ticket.content }}</p>
+            </section>
+
+            <!-- 回答区：三段式模板（适用前提 / 操作步骤 / 注意事项） -->
+            <section class="xj-card section-card">
+              <div class="section-head"><span class="section-title">回答</span><span class="section-count">{{ answers.length }}</span></div>
+
+              <div v-if="!answers.length" class="mini-state">
+                <img :src="icComment" class="ms-icon" />
+                <span>暂无回答，快来做第一个解答的人吧</span>
+              </div>
+
+              <article v-for="ans in answers" :key="ans.id" class="answer-card" :class="{ adopted: ans.isAdopted === 1 }">
+                <div class="ans-head">
+                  <img class="xj-avatar" :src="avatarFor(ans.responderName, ans.id)" alt="" />
+                  <div class="ans-author">
+                    <div class="a-name">
+                      {{ ans.responderName || '匿名回答者' }}
+                      <span v-if="ans.responderRole" class="xj-badge" :class="roleBadge(ans.responderRole)">{{ roleLabel(ans.responderRole) }}</span>
+                      <span v-if="ans.isAdopted === 1" class="xj-badge success adopt-badge"><img :src="icSuccess" class="ic xs" />已采纳</span>
+                    </div>
+                    <div class="a-meta">{{ ans.createdAt || '' }}</div>
+                  </div>
+                  <button v-if="canAdopt(ans)" class="xj-btn study sm" @click="onAdopt(ans)">采纳该回答</button>
+                </div>
+
+                <div class="ans-block precondition">
+                  <div class="ab-label"><img :src="icInfo" class="ic sm" />适用前提</div>
+                  <div class="ab-text">{{ ans.precondition || '未填写' }}</div>
+                </div>
+                <div class="ans-block steps">
+                  <div class="ab-label"><img :src="icDoc" class="ic sm" />操作步骤</div>
+                  <template v-if="ans.steps && ans.steps.length">
+                    <div class="step-row" v-for="(s, idx) in ans.steps" :key="idx">
+                      <span class="step-num">{{ idx + 1 }}</span><span class="step-text">{{ s }}</span>
+                    </div>
+                  </template>
+                  <div v-else class="ab-text">未填写</div>
+                </div>
+                <div class="ans-block caution">
+                  <div class="ab-label"><img :src="icWarning" class="ic sm" />注意事项</div>
+                  <div class="ab-text">{{ ans.cautions || '未填写' }}</div>
+                </div>
+              </article>
+            </section>
+
+            <!-- 追问区（限次） -->
+            <section class="xj-card section-card">
+              <div class="section-head"><span class="section-title">追问</span><span class="section-count">{{ followups.length }} / {{ followupLimit }}</span></div>
+
+              <div v-if="!followups.length" class="mini-state">
+                <img :src="icEdit" class="ms-icon" />
+                <span>暂无追问</span>
+              </div>
+              <ul v-else class="followup-list">
+                <li v-for="fu in followups" :key="fu.id">
+                  <img class="xj-avatar" :src="avatarFor(fu.fromUserName, fu.id)" alt="" />
+                  <div class="fu-main">
+                    <div class="fu-name">{{ fu.fromUserName || '匿名' }}<span v-if="fu.isAsker" class="xj-badge info">求助人</span></div>
+                    <div class="fu-text">{{ fu.content }}</div>
+                    <div class="fu-time">{{ fu.createdAt || '' }}</div>
+                  </div>
+                </li>
+              </ul>
+
+              <div v-if="myActions.canFollowUp && followups.length < followupLimit" class="inline-form">
+                <div class="xj-input-wrap study" style="flex:1">
+                  <input class="xj-input" v-model="followupForm.content" placeholder="补充信息或追问已有回答" @keyup.enter="onFollowup" />
+                </div>
+                <button class="xj-btn study" :disabled="submittingFollowup" @click="onFollowup">
+                  <img :src="icSend" class="ic" /> {{ submittingFollowup ? '提交中…' : '提交追问' }}
+                </button>
+              </div>
+              <div v-else-if="followups.length >= followupLimit" class="xj-toast info hd-limit">
+                <img :src="icInfo" class="xj-toast-icon" />
+                <div>
+                  <div class="xj-toast-title">追问次数已用完</div>
+                  <div class="xj-toast-desc">该求助单的追问次数已达到上限（{{ followupLimit }} 次）</div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 我要回答 -->
+            <section v-if="myActions.canAnswer" class="xj-card section-card">
+              <div class="section-head"><span class="section-title">我要回答</span></div>
+              <div class="xj-field">
+                <label class="xj-label"><img :src="icInfo" class="ic sm" />适用前提</label>
+                <div class="xj-input-wrap study"><input class="xj-input" v-model="answerForm.precondition" maxlength="500" placeholder="这个回答在什么条件下适用" /></div>
+              </div>
+              <div class="xj-field">
+                <label class="xj-label"><img :src="icDoc" class="ic sm" />操作步骤</label>
+                <div class="xj-input-wrap study textarea"><textarea class="xj-input" v-model="answerForm.stepsText" rows="4" placeholder="分步骤说明具体做法，每行一步"></textarea></div>
+              </div>
+              <div class="xj-field">
+                <label class="xj-label"><img :src="icWarning" class="ic sm" />注意事项</label>
+                <div class="xj-input-wrap study"><input class="xj-input" v-model="answerForm.cautions" maxlength="500" placeholder="需要额外注意的坑点" /></div>
+              </div>
+              <div class="form-actions">
+                <button class="xj-btn study lg" :disabled="submittingAnswer" @click="onAnswer">
+                  <img :src="icSend" class="ic" /> {{ submittingAnswer ? '提交中…' : '提交回答' }}
+                </button>
+              </div>
+            </section>
           </div>
-          <h1 class="tk-title">{{ ticket.title }}</h1>
-          <div class="tk-meta">
-            <div class="tk-asker">
+
+          <!-- ===== 右栏 ===== -->
+          <aside class="hd-side col-stack sticky">
+            <!-- 提问人卡 -->
+            <div class="xj-card xj-user-card hd-usercard">
               <img class="xj-avatar" :src="avatarFor(ticket.askerName, ticket.id)" alt="" />
-              <div>
-                <div class="tk-asker-name">{{ ticket.askerName || '匿名求助人' }}</div>
-                <div class="tk-asker-sub">求助人</div>
+              <div class="xj-user-name">{{ ticket.askerName || '匿名求助人' }}</div>
+              <div class="xj-user-sub">{{ tagName(ticket.majorTagId) }}<template v-if="gradeLabel(ticket.gradeLevel)"> · {{ gradeLabel(ticket.gradeLevel) }}</template></div>
+              <div class="xj-user-stats">
+                <div><b>{{ askerStats.asked }}</b><span>提问</span></div>
+                <div><b>{{ askerStats.solved }}</b><span>已解决</span></div>
+                <div><b>{{ askerStats.answered }}</b><span>回答</span></div>
               </div>
             </div>
-            <span class="fc-tag">{{ tagName(ticket.majorTagId) }}</span>
-            <span v-if="gradeLabel(ticket.gradeLevel)" class="fc-tag">{{ gradeLabel(ticket.gradeLevel) }}</span>
-            <span class="fc-tag">{{ tagName(ticket.questionTypeTagId) }}</span>
-            <span v-if="ticket.targetDirection" class="fc-tag">目标方向 · {{ ticket.targetDirection }}</span>
-          </div>
-          <p class="tk-content">{{ ticket.content }}</p>
-        </section>
 
-        <!-- 回答列表：三段式模板（适用前提 / 操作步骤 / 注意事项） -->
-        <section class="xj-card section-card">
-          <div class="section-head"><span class="section-title">回答</span><span class="section-count">{{ answers.length }}</span></div>
-
-          <div v-if="!answers.length" class="mini-state">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 15a2 2 0 01-2 2H8l-4 4V5a2 2 0 012-2h13a2 2 0 012 2z" /></svg>
-            <span>暂无回答，快来做第一个解答的人吧</span>
-          </div>
-
-          <article v-for="ans in answers" :key="ans.id" class="answer-card" :class="{ adopted: ans.isAdopted === 1 }">
-            <div class="ans-head">
-              <img class="xj-avatar" :src="avatarFor(ans.responderName, ans.id)" alt="" />
-              <div class="ans-author">
-                <div class="a-name">
-                  {{ ans.responderName || '匿名回答者' }}
-                  <span v-if="ans.responderRole" class="xj-badge" :class="roleBadge(ans.responderRole)">{{ roleLabel(ans.responderRole) }}</span>
-                  <span v-if="ans.isAdopted === 1" class="xj-badge success">已采纳</span>
+            <!-- 相关求助 -->
+            <div class="xj-card side-card">
+              <div class="sc-head"><span class="sc-title">相关求助</span><span class="sc-more">更多 ›</span></div>
+              <div
+                v-for="r in relatedTickets" :key="r.id"
+                class="hd-related" @click="router.push('/help/' + r.id)"
+              >
+                <span class="xj-badge hd-rel-badge" :class="statusMeta(r.status).badge">{{ statusMeta(r.status).label }}</span>
+                <div class="hd-rel-main">
+                  <div class="hd-rel-title">{{ r.title }}</div>
+                  <div class="hd-rel-meta"><img :src="icComment" class="ic xs" />{{ r.answers }} 回答</div>
                 </div>
-                <div class="a-meta">{{ ans.createdAt || '' }}</div>
               </div>
-              <button v-if="canAdopt(ans)" class="xj-btn study sm" @click="onAdopt(ans)">采纳该回答</button>
             </div>
 
-            <div class="ans-block precondition">
-              <div class="ab-label">适用前提</div>
-              <div class="ab-text">{{ ans.precondition || '未填写' }}</div>
-            </div>
-            <div class="ans-steps">
-              <div class="ab-label">操作步骤</div>
-              <template v-if="ans.steps && ans.steps.length">
-                <div class="step-row" v-for="(s, idx) in ans.steps" :key="idx">
-                  <span class="step-num">{{ idx + 1 }}</span><span class="step-text">{{ s }}</span>
+            <!-- 求助统计概览 -->
+            <div class="xj-card side-card">
+              <div class="sc-head"><span class="sc-title">求助统计</span></div>
+              <div class="hd-overview">
+                <div class="hd-ov-cell">
+                  <img :src="icComment" class="ic-lg" />
+                  <b>{{ answers.length }}</b><span>回答数</span>
                 </div>
-              </template>
-              <div v-else class="ab-text">未填写</div>
-            </div>
-            <div class="ans-block caution">
-              <div class="ab-label">注意事项</div>
-              <div class="ab-text">{{ ans.cautions || '未填写' }}</div>
-            </div>
-          </article>
-        </section>
-
-        <!-- 追问区（限次） -->
-        <section class="xj-card section-card">
-          <div class="section-head"><span class="section-title">追问</span><span class="section-count">{{ followups.length }} / {{ followupLimit }}</span></div>
-
-          <div v-if="!followups.length" class="mini-state">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9.1 9a3 3 0 115.8 1c0 2-3 2-3 4M12 17h.01" /></svg>
-            <span>暂无追问</span>
-          </div>
-          <ul v-else class="followup-list">
-            <li v-for="fu in followups" :key="fu.id">
-              <img class="xj-avatar" :src="avatarFor(fu.fromUserName, fu.id)" alt="" />
-              <div class="fu-main">
-                <div class="fu-name">{{ fu.fromUserName || '匿名' }}<span v-if="fu.isAsker" class="xj-badge info">求助人</span></div>
-                <div class="fu-text">{{ fu.content }}</div>
-                <div class="fu-time">{{ fu.createdAt || '' }}</div>
+                <div class="hd-ov-cell">
+                  <img :src="icEdit" class="ic-lg" />
+                  <b>{{ followups.length }}</b><span>追问数</span>
+                </div>
               </div>
-            </li>
-          </ul>
-
-          <div v-if="myActions.canFollowUp && followups.length < followupLimit" class="inline-form">
-            <div class="xj-input-wrap study" style="flex:1">
-              <input class="xj-input" v-model="followupForm.content" placeholder="补充信息或追问已有回答" @keyup.enter="onFollowup" />
+              <div class="hd-status-row">
+                <img :src="icInfo" class="ic" />
+                <span class="hd-status-label">当前状态</span>
+                <span class="xj-badge" :class="statusMeta(ticket.status).badge">{{ statusMeta(ticket.status).label }}</span>
+              </div>
             </div>
-            <button class="xj-btn study" :disabled="submittingFollowup" @click="onFollowup">{{ submittingFollowup ? '提交中…' : '提交追问' }}</button>
-          </div>
-          <div v-else-if="followups.length >= followupLimit" class="xj-toast info">
-            <div class="xj-toast-icon">
-              <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#2F7DF6" stroke-width="1.7"><circle cx="12" cy="12" r="9" /><path d="M12 8h.01M11 12h1v5h1" /></svg>
-            </div>
-            <div>
-              <div class="xj-toast-title">追问次数已用完</div>
-              <div class="xj-toast-desc">该求助单的追问次数已达到上限（{{ followupLimit }} 次）</div>
-            </div>
-          </div>
-        </section>
-
-        <!-- 我要回答 -->
-        <section v-if="myActions.canAnswer" class="xj-card section-card">
-          <div class="section-head"><span class="section-title">我要回答</span></div>
-          <div class="xj-field">
-            <label class="xj-label">适用前提</label>
-            <div class="xj-input-wrap study"><input class="xj-input" v-model="answerForm.precondition" maxlength="500" placeholder="这个回答在什么条件下适用" /></div>
-          </div>
-          <div class="xj-field">
-            <label class="xj-label">操作步骤</label>
-            <div class="xj-input-wrap study textarea"><textarea class="xj-input" v-model="answerForm.stepsText" rows="4" placeholder="分步骤说明具体做法，每行一步"></textarea></div>
-          </div>
-          <div class="xj-field">
-            <label class="xj-label">注意事项</label>
-            <div class="xj-input-wrap study"><input class="xj-input" v-model="answerForm.cautions" maxlength="500" placeholder="需要额外注意的坑点" /></div>
-          </div>
-          <div class="form-actions">
-            <button class="xj-btn study lg" :disabled="submittingAnswer" @click="onAnswer">{{ submittingAnswer ? '提交中…' : '提交回答' }}</button>
-          </div>
-        </section>
+          </aside>
+        </div>
       </template>
 
       <div v-else class="page-state">
@@ -149,7 +207,18 @@ import { useDemoStore, loadOr } from '../store/demo'
 import { avatarFor } from '../mock/demoData'
 import { helpApi, tagApi } from '../api'
 import XLoader from '../components/XLoader.vue'
+import PageHero from '../components/PageHero.vue'
 import notFoundImg from '../assets/states/no-results.svg'
+import heroBg from '../assets/bg/生活圈背景.png'
+// UI Kit 正式图标（彩色 SVG，作为 <img> 使用）
+import icInfo from '../assets/icons/status/info.svg'
+import icWarning from '../assets/icons/status/warning.svg'
+import icSuccess from '../assets/icons/status/success.svg'
+import icDoc from '../assets/icons/content/document.svg'
+import icComment from '../assets/icons/actions/comment.svg'
+import icEdit from '../assets/icons/actions/edit.svg'
+import icSend from '../assets/icons/actions/send.svg'
+import icArrow from '../assets/icons/actions/arrow-right.svg'
 
 const route = useRoute()
 const router = useRouter()
@@ -231,6 +300,21 @@ const DEMO_DETAILS: Record<number, any> = {
     myActions: { canAnswer: false, canFollowUp: false, canAdopt: false },
   },
 }
+
+// 静态演示：右栏“相关求助”列表（写死演示数据，不臆造接口）
+const DEMO_RELATED = [
+  { id: 102, title: '考研 408 和推免哪个更适合双非低GPA同学？', status: 'ANSWERED', answers: 2 },
+  { id: 103, title: '数据结构期末总是卡在动态规划，有没有稳的复习路线？', status: 'ADOPTED', answers: 2 },
+  { id: 104, title: '互联网大厂暑期实习内推，简历该怎么突出项目经历？', status: 'OPEN', answers: 0 },
+  { id: 105, title: '数学建模国赛想冲国一，队伍分工和选题有什么经验？', status: 'CLOSED', answers: 1 },
+]
+const relatedTickets = computed(() => DEMO_RELATED.filter((r) => r.id !== id).slice(0, 3))
+
+// 静态演示：提问人贡献计数（按求助单 id 稳定派生，写死演示）
+const askerStats = computed(() => {
+  const seed = ticket.value ? (Number(ticket.value.id) || 1) : 1
+  return { asked: 3 + seed % 9, solved: 2 + (seed * 2) % 12, answered: 5 + (seed * 3) % 40 }
+})
 
 function gradeLabel(g?: number | null) {
   if (!g) return ''
@@ -355,61 +439,99 @@ onMounted(() => {
 
 <style scoped>
 .help-page { padding-bottom: 50px; }
-.help-container.detail { max-width: 860px; padding-top: 24px; }
+.hd-wrap { padding-top: 18px; }
 .back-link { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--xj-muted); cursor: pointer; margin-bottom: 16px; }
 .back-link:hover { color: var(--accent-deep); }
+.back-ic { transform: scaleX(-1); }
 
+.hd-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 22px; align-items: start; }
+.hd-main { min-width: 0; }
+
+/* ---- 求助单主卡 ---- */
 .ticket-card { padding: 24px 26px; }
 .tk-top { display: flex; align-items: center; justify-content: space-between; }
 .tk-time { font-size: 12px; color: var(--xj-subtle); }
-.tk-title { margin: 12px 0 16px; font-size: 21px; font-weight: 850; color: var(--xj-ink); line-height: 1.4; }
-.tk-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding-bottom: 18px; border-bottom: 1px solid var(--xj-line); }
-.tk-asker { display: flex; align-items: center; gap: 9px; margin-right: 4px; }
-.tk-asker .xj-avatar { width: 36px; height: 36px; }
-.tk-asker-name { font-size: 13px; font-weight: 750; color: var(--xj-ink); }
-.tk-asker-sub { font-size: 11px; color: var(--xj-subtle); }
-.tk-content { margin: 18px 0 0; font-size: 14px; color: var(--xj-text); line-height: 1.85; white-space: pre-wrap; }
+.tk-title { margin: 13px 0 18px; font-size: 22px; font-weight: 850; color: var(--xj-ink); line-height: 1.4; }
+.tk-asker { display: flex; align-items: center; gap: 11px; }
+.tk-asker .xj-avatar { width: 42px; height: 42px; }
+.tk-asker-name { font-size: 14px; font-weight: 750; color: var(--xj-ink); }
+.tk-asker-sub { font-size: 12px; color: var(--xj-subtle); margin-top: 3px; }
+.tk-tags { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; margin-top: 14px; }
+.tk-content { margin: 16px 0 0; padding-top: 16px; border-top: 1px solid var(--xj-line); font-size: 14.5px; color: var(--xj-text); line-height: 1.85; white-space: pre-wrap; }
 
+/* ---- 分区卡 ---- */
 .section-card { padding: 20px 22px; margin-top: 18px; }
-.section-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 14px; }
-.section-title { font-size: 15px; font-weight: 800; color: var(--xj-ink); }
-.section-count { font-size: 12.5px; color: var(--xj-subtle); }
-.mini-state { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 26px 0; color: var(--xj-subtle); font-size: 12.5px; }
-.mini-state svg { opacity: .5; }
+.section-head { display: flex; align-items: center; gap: 9px; margin-bottom: 16px; }
+.section-title { font-size: 15.5px; font-weight: 800; color: var(--xj-ink); }
+.section-count { min-width: 22px; height: 22px; padding: 0 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-deep); font-size: 12px; font-weight: 750; display: inline-flex; align-items: center; justify-content: center; }
+.mini-state { display: flex; flex-direction: column; align-items: center; gap: 9px; padding: 26px 0; color: var(--xj-subtle); font-size: 12.5px; }
+.mini-state .ms-icon { width: 40px; height: 40px; opacity: .85; }
 
+/* ---- 回答卡（三段式） ---- */
 .answer-card { padding: 18px 20px; border: 1px solid var(--xj-line); border-radius: var(--xj-radius-md); margin-bottom: 14px; }
 .answer-card:last-child { margin-bottom: 0; }
-.answer-card.adopted { border-color: #BEE9CD; background: #FBFFFC; }
-.answer-card .xj-avatar { width: 34px; height: 34px; }
+.answer-card.adopted { border-color: #BEE9CD; background: #FBFFFC; box-shadow: 0 0 0 3px rgba(22,169,101,.06); }
+.answer-card .xj-avatar { width: 38px; height: 38px; }
 .ans-head { display: flex; align-items: center; gap: 11px; }
 .ans-author { flex: 1; min-width: 0; }
-.ans-author .a-name { display: flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 750; color: var(--xj-ink); }
-.ans-author .a-meta { font-size: 11.5px; color: var(--xj-subtle); margin-top: 2px; }
-.ans-block { margin-top: 14px; padding: 11px 14px; border-radius: 10px; border: 1px solid var(--xj-line); background: var(--xj-soft); }
+.ans-author .a-name { display: flex; align-items: center; flex-wrap: wrap; gap: 7px; font-size: 14px; font-weight: 750; color: var(--xj-ink); }
+.ans-author .a-meta { font-size: 11.5px; color: var(--xj-subtle); margin-top: 3px; }
+.adopt-badge { gap: 3px; }
+.ans-block { margin-top: 14px; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--xj-line); background: var(--xj-soft); }
 .ans-block.precondition { background: #F2F7FF; border-color: #D4E4FF; }
 .ans-block.caution { background: #FFF9EC; border-color: #F7E2AF; }
-.ans-steps { margin-top: 14px; }
-.ab-label { font-size: 11.5px; font-weight: 750; color: var(--xj-subtle); margin-bottom: 6px; }
-.ab-text { font-size: 13px; color: var(--xj-text); line-height: 1.7; white-space: pre-wrap; }
-.step-row { display: flex; gap: 10px; padding: 6px 0; font-size: 13px; color: var(--xj-text); line-height: 1.6; }
-.step-num { flex: none; width: 20px; height: 20px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 11px; font-weight: 800; display: grid; place-items: center; margin-top: 1px; }
+.ab-label { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; color: var(--xj-muted); margin-bottom: 8px; }
+.ab-text { font-size: 13.5px; color: var(--xj-text); line-height: 1.75; white-space: pre-wrap; }
+.step-row { display: flex; gap: 10px; padding: 5px 0; font-size: 13.5px; color: var(--xj-text); line-height: 1.65; }
+.step-num { flex: none; width: 21px; height: 21px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 11px; font-weight: 800; display: grid; place-items: center; margin-top: 1px; }
 .step-text { flex: 1; }
 
+/* ---- 追问 ---- */
 .followup-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
 .followup-list li { display: flex; gap: 10px; }
-.followup-list .xj-avatar { width: 26px; height: 26px; flex: none; }
+.followup-list .xj-avatar { width: 30px; height: 30px; flex: none; }
 .fu-main { flex: 1; min-width: 0; }
 .fu-name { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 700; color: var(--xj-ink); }
-.fu-text { margin-top: 3px; font-size: 13px; color: var(--xj-text); line-height: 1.6; }
-.fu-time { margin-top: 3px; font-size: 11px; color: var(--xj-subtle); }
+.fu-text { margin-top: 4px; font-size: 13px; color: var(--xj-text); line-height: 1.65; }
+.fu-time { margin-top: 4px; font-size: 11px; color: var(--xj-subtle); }
 .inline-form { display: flex; gap: 10px; align-items: center; margin-top: 16px; }
+.hd-limit { margin-top: 6px; align-items: center; }
+.hd-limit .xj-toast-icon { width: 30px; height: 30px; flex: none; }
 
+/* ---- 我要回答表单 ---- */
+.section-card .xj-field { margin-bottom: 14px; }
+.section-card .xj-label { display: flex; align-items: center; gap: 6px; }
 .form-actions { display: flex; justify-content: flex-end; margin-top: 4px; }
 .xj-input-wrap.textarea { height: auto; min-height: 108px; align-items: flex-start; padding: 12px 13px; }
 .xj-input-wrap.textarea textarea.xj-input { resize: vertical; min-height: 84px; line-height: 1.7; font-family: inherit; }
 
-@media (max-width: 640px) {
-  .tk-meta { gap: 8px; }
+/* ---- 右栏 ---- */
+.hd-usercard { padding: 20px 16px; }
+.hd-related { display: flex; gap: 10px; align-items: flex-start; padding: 12px 4px; border-bottom: 1px solid var(--xj-line); cursor: pointer; }
+.hd-related:last-child { border-bottom: 0; }
+.hd-related:hover .hd-rel-title { color: var(--accent-deep); }
+.hd-rel-badge { flex: none; margin-top: 1px; }
+.hd-rel-main { min-width: 0; flex: 1; }
+.hd-rel-title { font-size: 13px; font-weight: 700; color: var(--xj-ink); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.hd-rel-meta { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--xj-subtle); margin-top: 6px; }
+
+.hd-overview { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.hd-ov-cell { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 14px 8px; border: 1px solid var(--xj-line); border-radius: var(--xj-radius-md); background: var(--xj-soft); }
+.hd-ov-cell b { font-size: 20px; font-weight: 850; color: var(--xj-ink); }
+.hd-ov-cell span { font-size: 11px; color: var(--xj-subtle); }
+.hd-status-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--xj-line); }
+.hd-status-label { flex: 1; font-size: 12.5px; color: var(--xj-muted); font-weight: 600; }
+
+/* 图标尺寸 */
+.ic { width: 18px; height: 18px; display: block; flex: none; }
+.ic.sm { width: 15px; height: 15px; }
+.ic.xs { width: 13px; height: 13px; }
+.ic-lg { width: 26px; height: 26px; display: block; }
+
+@media (max-width: 900px) {
+  .hd-grid { grid-template-columns: 1fr; }
+  .hd-side.sticky { position: static; top: auto; }
+  .ticket-card { padding: 20px 18px; }
   .inline-form { flex-direction: column; align-items: stretch; }
 }
 </style>

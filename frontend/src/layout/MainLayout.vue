@@ -8,20 +8,20 @@
 
       <nav class="app-nav-links">
         <router-link to="/dashboard" class="app-nav-link" :class="{ active: isHomeNeutral }">双圈首页</router-link>
-        <router-link :to="{ path: '/dashboard', query: { scene: 'study' } }" class="app-nav-link" :class="{ active: scene === 'study' && isDashboard }">学业圈</router-link>
-        <router-link :to="{ path: '/dashboard', query: { scene: 'life' } }" class="app-nav-link" :class="{ active: scene === 'life' && isDashboard }">生活圈</router-link>
+        <router-link :to="{ path: '/dashboard', query: { scene: 'study' } }" class="app-nav-link" :class="{ active: route.query.scene === 'study' && isDashboard }">学业圈</router-link>
+        <router-link :to="{ path: '/dashboard', query: { scene: 'life' } }" class="app-nav-link" :class="{ active: route.query.scene === 'life' && isDashboard }">生活圈</router-link>
         <router-link to="/notifications" class="app-nav-link" :class="{ active: route.path === '/notifications' }">通知</router-link>
       </nav>
 
       <div class="app-nav-spacer"></div>
 
       <div class="nav-search">
-        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4.3-4.3" /></svg>
-        <input v-model="keyword" placeholder="搜索知识、求助、机会…" @keyup.enter="doSearch" />
+        <img :src="icSearch" class="nav-ic" alt="" />
+        <input v-model="keyword" placeholder="搜索内容、知识、求助…" @keyup.enter="doSearch" />
       </div>
 
       <div class="nav-icon-btn" title="通知" @click="router.push('/notifications')">
-        <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.7 21a2 2 0 01-3.4 0" /></svg>
+        <img :src="icBell" class="nav-ic lg" alt="通知" />
         <span v-if="unread > 0" class="nav-dot">{{ unread > 99 ? '99+' : unread }}</span>
       </div>
 
@@ -51,6 +51,10 @@
           <component :is="Component" />
         </transition>
       </router-view>
+      <!-- 路由切换：品牌 X 加载转场（v10 动画） -->
+      <transition name="fade">
+        <div v-if="routeLoading" class="route-loading"><img :src="xLoader" alt="加载中" /></div>
+      </transition>
     </main>
   </div>
 </template>
@@ -63,6 +67,9 @@ import { useDemoStore } from '../store/demo'
 import { notificationApi } from '../api'
 import { avatarFor, demoMe } from '../mock/demoData'
 import XLogo from '../components/XLogo.vue'
+import icSearch from '../assets/icons/actions/search.svg'
+import icBell from '../assets/icons/actions/bell.svg'
+import xLoader from '../assets/brand/x-loader.svg'
 
 const route = useRoute()
 const router = useRouter()
@@ -72,6 +79,15 @@ const demo = useDemoStore()
 const keyword = ref('')
 const unread = ref(0)
 const menuOpen = ref(false)
+const routeLoading = ref(false)
+let loadingTimer: ReturnType<typeof setTimeout> | null = null
+const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+watch(() => route.path, () => {
+  if (reduced) return
+  routeLoading.value = true
+  if (loadingTimer) clearTimeout(loadingTimer)
+  loadingTimer = setTimeout(() => (routeLoading.value = false), 620)
+})
 
 const scene = computed(() => (route.query.scene === 'study' ? 'study' : 'life'))
 const sceneClass = computed(() => (scene.value === 'study' ? 'xj-scene-study' : 'xj-scene-life'))
@@ -111,4 +127,11 @@ watch(() => auth.isLogin, loadUnread)
 .page-fade-enter-from { opacity: 0; transform: translateY(8px); }
 .page-fade-leave-active { transition: opacity 0.12s; }
 .page-fade-leave-to { opacity: 0; }
+.nav-ic { width: 17px; height: 17px; opacity: .68; }
+.nav-ic.lg { width: 21px; height: 21px; }
+.route-loading { position: fixed; inset: 64px 0 0 0; z-index: 45; display: grid; place-items: center; background: color-mix(in srgb, var(--xj-page) 76%, transparent); backdrop-filter: blur(3px); }
+.route-loading img { width: 74px; height: 74px; filter: drop-shadow(0 10px 26px rgba(8,20,38,.16)); }
+.fade-enter-active { transition: opacity .18s ease; }
+.fade-leave-active { transition: opacity .3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>

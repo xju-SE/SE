@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="256" height="256" viewBox="55 65 275 255"
+     role="img" aria-labelledby="title desc">
+  <title id="title">XJOURNEY X Refresh Loader v10</title>
+  <desc id="desc">The first stroke is fully visible at the start. The second stroke draws upward to complete the X. The completed X pauses. Then the first stroke disappears first, followed by the second stroke. The cycle then repeats.</desc>
+
+  <defs>
+    <linearGradient id="xjGradient" x1="7%" y1="93%" x2="93%" y2="7%">
+      <stop offset="0" stop-color="#9BE724"/>
+      <stop offset="0.30" stop-color="#39CE61"/>
+      <stop offset="0.64" stop-color="#05BF8D"/>
+      <stop offset="1" stop-color="#04AEC0"/>
+    </linearGradient>
+
+    <!-- First stroke: exact brand geometry -->
+    <g id="slashShape" fill="url(#xjGradient)">
+      <path d="M84 127 L148 193 L153 191 L164 181 L178 171 L175 166 L142 133 L136 129 L130 127 Z"/>
+      <path d="M195 239 L195 241 L238 284 L244 287 L252 289 L293 289 L289 283 L222 215 Z"/>
+    </g>
+
+    <!-- Second stroke: exact brand geometry -->
+    <path id="arrowShape" d="M308 90 L247 105 L215 126 L218 126 L221 124 L244 118 L247 119 L79 286 L76 294 L116 294 L126 290 L281 133 L283 132 L291 136 Z" fill="url(#xjGradient)"/>
+
+    <!-- Slash mask: initially full; later erased in its own order -->
+    <mask id="slashMask" maskUnits="userSpaceOnUse" x="55" y="65" width="275" height="255">
+      <rect x="55" y="65" width="275" height="255" fill="black"/>
+      <g transform="translate(60 102) rotate(39)">
+        <rect x="0" y="-55" width="330" height="110" fill="white">
+          <animate attributeName="x"
+                   dur="3.0s" repeatCount="indefinite"
+                   keyTimes="0;0.58;0.78;1"
+                   values="0;0;330;330"
+                   calcMode="spline"
+                   keySplines="0 0 1 1;.55 .05 .30 .98;0 0 1 1"/>
+          <animate attributeName="width"
+                   dur="3.0s" repeatCount="indefinite"
+                   keyTimes="0;0.58;0.78;1"
+                   values="330;330;0;0"
+                   calcMode="spline"
+                   keySplines="0 0 1 1;.55 .05 .30 .98;0 0 1 1"/>
+        </rect>
+        <!-- small yielding gap at the crossing while the second stroke draws -->
+        <circle cx="164" cy="0" r="0" fill="black">
+          <animate attributeName="r"
+                   dur="3.0s" repeatCount="indefinite"
+                   keyTimes="0;0.18;0.34;0.58;0.72;1"
+                   values="0;0;16;16;0;0"
+                   calcMode="spline"
+                   keySplines="0 0 1 1;.55 .05 .30 .98;0 0 1 1;.55 .05 .30 .98;0 0 1 1"/>
+        </circle>
+      </g>
+    </mask>
+
+    <!-- Arrow mask: hidden at start; draws in; holds; then disappears after slash -->
+    <mask id="arrowMask" maskUnits="userSpaceOnUse" x="55" y="65" width="275" height="255">
+      <rect x="55" y="65" width="275" height="255" fill="black"/>
+      <g transform="translate(54 315) rotate(-41.3)">
+        <rect x="0" y="-60" width="0" height="120" fill="white">
+          <animate attributeName="x"
+                   dur="3.0s" repeatCount="indefinite"
+                   keyTimes="0;0.16;0.38;0.80;0.96;1"
+                   values="0;0;0;0;350;350"
+                   calcMode="spline"
+                   keySplines="0 0 1 1;.55 .05 .30 .98;0 0 1 1;.55 .05 .30 .98;0 0 1 1"/>
+          <animate attributeName="width"
+                   dur="3.0s" repeatCount="indefinite"
+                   keyTimes="0;0.16;0.38;0.80;0.96;1"
+                   values="0;0;350;350;0;0"
+                   calcMode="spline"
+                   keySplines="0 0 1 1;.55 .05 .30 .98;0 0 1 1;.55 .05 .30 .98;0 0 1 1"/>
+        </rect>
+      </g>
+    </mask>
+  </defs>
+
+  <g mask="url(#slashMask)">
+    <use href="#slashShape"/>
+  </g>
+
+  <g mask="url(#arrowMask)">
+    <use href="#arrowShape"/>
+  </g>
+</svg>

@@ -1,11 +1,7 @@
 <template>
   <div class="opp-page xj-scene-study">
+    <PageHero :bg="heroBg" tone="study" size="mid" title="机会与组队" subtitle="竞赛、大创、实习与讲座机会，找到同行的伙伴" />
     <div class="container">
-      <div class="opp-head">
-        <h1>机会与组队</h1>
-        <p>竞赛、大创、实习与讲座机会，找到同行的伙伴</p>
-      </div>
-
       <div class="xj-tabs opp-main-tabs">
         <button class="xj-tab study" :class="{ active: mainTab === 'opportunities' }" @click="switchMain('opportunities')">机会列表</button>
         <button class="xj-tab study" :class="{ active: mainTab === 'teams' }" @click="switchMain('teams')">组队</button>
@@ -26,12 +22,12 @@
           <div v-if="opportunities.length" class="opp-grid">
             <article v-for="o in opportunities" :key="o.id" class="xj-card study opp-card">
               <div class="opp-card-top">
-                <span class="xj-badge" :class="typeBadge(o.type)">{{ typeLabel(o.type) }}</span>
+                <span class="xj-badge" :class="typeBadge(o.type)"><img :src="typeIcon(o.type)" class="ic" alt="" />{{ typeLabel(o.type) }}</span>
                 <span class="xj-badge" :class="statusBadge(o.status)">{{ statusLabel(o.status) }}</span>
               </div>
               <h3 class="opp-card-title">{{ o.title }}</h3>
               <div class="opp-card-meta">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 3" /></svg>
+                <img :src="icClock" class="ic" alt="" />
                 <span>截止 {{ formatDeadline(o.deadline) }}</span>
               </div>
               <div class="opp-card-actions">
@@ -43,11 +39,7 @@
               </div>
             </article>
           </div>
-          <div v-else class="page-state">
-            <img :src="emptyImg" alt="" />
-            <div class="ps-text">暂无相关机会</div>
-            <div class="ps-sub">换个类型试试，或稍后再来看看</div>
-          </div>
+          <XPageState v-else type="empty" title="暂无相关机会" desc="换个类型试试，或稍后再来看看" />
         </template>
       </template>
 
@@ -62,7 +54,7 @@
               </div>
               <h3 class="opp-card-title">{{ t.title || '未命名队伍' }}</h3>
               <div class="opp-card-meta">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2" /><circle cx="10" cy="7" r="4" /><path d="M22 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /></svg>
+                <img :src="icTeam" class="ic" alt="" />
                 <span>成员 {{ t.currentSize ?? '-' }}<template v-if="t.capacity"> / {{ t.capacity }}</template></span>
               </div>
               <div v-if="t.opportunityTitle" class="opp-card-sub">所属机会 · {{ t.opportunityTitle }}</div>
@@ -71,11 +63,7 @@
               </div>
             </article>
           </div>
-          <div v-else class="page-state">
-            <img :src="emptyImg" alt="" />
-            <div class="ps-text">暂无组队信息</div>
-            <div class="ps-sub">机会开放组队后，队伍会出现在这里</div>
-          </div>
+          <XPageState v-else type="empty" title="暂无组队信息" desc="机会开放组队后，队伍会出现在这里" />
         </template>
       </template>
     </div>
@@ -109,9 +97,24 @@ import { useDemoStore, loadOr } from '../store/demo'
 import { demoHotStudy, demoRecoStudy } from '../mock/demoData'
 import { opportunityApi } from '../api'
 import XLoader from '../components/XLoader.vue'
-import emptyImg from '../assets/states/empty.svg'
+import PageHero from '../components/PageHero.vue'
+import XPageState from '../components/uikit/states/XPageState.vue'
+import heroBg from '../assets/bg/蓝色雕塑背景.png'
+import icClock from '../assets/icons/actions/clock.svg'
+import icTeam from '../assets/icons/content/team.svg'
+import icStar from '../assets/icons/actions/star.svg'
+import icCode from '../assets/icons/content/code.svg'
+import icDocument from '../assets/icons/content/document.svg'
+import icAnnouncement from '../assets/icons/content/announcement.svg'
 
 const demo = useDemoStore()
+
+const TYPE_ICON: Record<string, string> = {
+  COMPETITION: icStar, INNOVATION: icCode, INTERNSHIP: icDocument, LECTURE: icAnnouncement,
+}
+function typeIcon(t: string) {
+  return TYPE_ICON[t] || icDocument
+}
 
 const TYPES = [
   { label: '全部', value: '' },
@@ -233,17 +236,16 @@ onMounted(loadOpportunities)
 
 <style scoped>
 .opp-page { padding: 26px 0 48px; }
-.opp-head { margin-bottom: 20px; }
-.opp-head h1 { margin: 0 0 6px; font-size: 26px; font-weight: 850; color: var(--xj-ink); }
-.opp-head p { margin: 0; font-size: 13.5px; color: var(--xj-subtle); }
-.opp-main-tabs { margin-bottom: 6px; }
+.opp-main-tabs { margin-top: 22px; margin-bottom: 6px; }
 .opp-type-tabs { margin-bottom: 20px; }
 
 .opp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
 .opp-card, .team-card { padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
 .opp-card-top { display: flex; flex-wrap: wrap; gap: 7px; }
+.opp-card-top .ic { width: 13px; height: 13px; }
 .opp-card-title { margin: 0; font-size: 15px; font-weight: 800; color: var(--xj-ink); line-height: 1.42; }
 .opp-card-meta { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--xj-subtle); }
+.opp-card-meta .ic { width: 14px; height: 14px; flex: none; }
 .opp-card-sub { font-size: 11.5px; color: var(--xj-subtle); margin-top: -4px; }
 .opp-card-actions { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--xj-line); display: flex; justify-content: flex-end; }
 

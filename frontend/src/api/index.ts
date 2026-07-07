@@ -75,6 +75,7 @@ export const notificationApi = {
   list: (params: any) => request.get('/notifications', { params }),
   unreadCount: () => request.get('/notifications/unread-count'),
   markRead: (id: number) => request.patch(`/notifications/${id}/read`),
+  markAllRead: () => request.patch('/notifications/read-all'),
 }
 
 // M7 管理后台

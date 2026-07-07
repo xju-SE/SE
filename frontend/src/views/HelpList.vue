@@ -1,22 +1,30 @@
 <template>
   <div class="help-page xj-scene-study">
-    <div class="container help-container">
-      <div class="help-head">
-        <div>
-          <h1 class="help-title">结构化求助</h1>
-          <p class="help-sub">发一条结构化求助，系统会自动匹配同专业校友与学长学姐来解答</p>
-        </div>
-        <button class="xj-btn study lg" @click="router.push('/help/create')">
-          <IconPlus class="ic" /> 发起求助
+    <!-- 英雄横幅：学业圈首页背景 + 蓝色渐变，右侧白底"发起求助"按钮 -->
+    <PageHero :bg="heroBg" tone="study" size="mid" title="结构化求助" subtitle="发一条结构化求助，系统自动匹配同专业校友学长来解答">
+      <template #actions>
+        <button class="hero-btn" @click="router.push('/help/create')">
+          <img :src="icPlus" class="ic" /> 发起求助
         </button>
-      </div>
+      </template>
+    </PageHero>
 
+    <div class="container help-container">
       <div v-if="statCard" class="xj-card help-stats">
-        <div class="hs-item"><b>{{ statCard.openCount ?? '-' }}</b><span>待解决</span></div>
+        <div class="hs-item">
+          <img :src="icComment" class="hs-icon" />
+          <b>{{ statCard.openCount ?? '-' }}</b><span>待解决</span>
+        </div>
         <div class="hs-sep"></div>
-        <div class="hs-item"><b>{{ statCard.resolvedCount ?? '-' }}</b><span>已解决</span></div>
+        <div class="hs-item">
+          <img :src="icSuccess" class="hs-icon" />
+          <b>{{ statCard.resolvedCount ?? '-' }}</b><span>已解决</span>
+        </div>
         <div class="hs-sep"></div>
-        <div class="hs-item"><b>{{ formatHours(statCard.avgResponseHours) }}</b><span>平均响应时长</span></div>
+        <div class="hs-item">
+          <img :src="icClock" class="hs-icon" />
+          <b>{{ formatHours(statCard.avgResponseHours) }}</b><span>平均响应时长</span>
+        </div>
       </div>
 
       <div class="feed-head">
@@ -52,9 +60,8 @@
               <span v-if="t.targetDirection" class="fc-tag">{{ t.targetDirection }}</span>
             </div>
             <div class="fc-actions">
-              <span class="fc-act"><IconComment class="ic" /> {{ t.answerCount ?? 0 }} 回答</span>
-              <span class="fc-act"><IconFollow class="ic" /> {{ t.followupCount ?? 0 }} 追问</span>
-              <span class="fc-act" @click="router.push('/help/' + t.id)"><IconLink class="ic" /> 查看详情</span>
+              <span class="fc-act"><img :src="icComment" class="ic" /> {{ t.answerCount ?? 0 }} 回答 · {{ t.followupCount ?? 0 }} 追问</span>
+              <span class="fc-act" @click="router.push('/help/' + t.id)"><img :src="icLink" class="ic" /> 查看详情</span>
             </div>
           </article>
         </div>
@@ -69,13 +76,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, h } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDemoStore, loadOr } from '../store/demo'
 import { avatarFor } from '../mock/demoData'
 import { helpApi, tagApi } from '../api'
 import XLoader from '../components/XLoader.vue'
+import PageHero from '../components/PageHero.vue'
 import emptyImg from '../assets/states/empty.svg'
+import heroBg from '../assets/bg/学业圈首页背景.png'
+// UI Kit 正式图标（彩色 SVG，作为 <img> 使用）
+import icPlus from '../assets/icons/actions/plus.svg'
+import icComment from '../assets/icons/actions/comment.svg'
+import icClock from '../assets/icons/actions/clock.svg'
+import icSuccess from '../assets/icons/status/success.svg'
+import icLink from '../assets/icons/actions/link.svg'
 
 const router = useRouter()
 const demo = useDemoStore()
@@ -193,28 +208,30 @@ onMounted(() => {
   loadTags()
   load()
 })
-
-const svg = (d: string) => () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.9, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, [h('path', { d })])
-const IconPlus = svg('M12 5v14M5 12h14')
-const IconComment = svg('M21 15a2 2 0 01-2 2H8l-4 4V5a2 2 0 012-2h13a2 2 0 012 2z')
-const IconFollow = svg('M9.1 9a3 3 0 115.8 1c0 2-3 2-3 4M12 17h.01')
-const IconLink = svg('M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1')
 </script>
 
 <style scoped>
 .help-page { padding-bottom: 40px; }
 .help-container { padding-top: 26px; }
-.help-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 20px; }
-.help-title { margin: 0; font-size: 25px; font-weight: 850; color: var(--xj-ink); }
-.help-sub { margin: 8px 0 0; font-size: 13.5px; color: var(--xj-muted); }
+
+.hero-btn { height: 40px; padding: 0 18px; border-radius: 999px; border: 0; background: #fff; color: var(--xj-blue-deep);
+  font-weight: 750; font-size: 13.5px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  box-shadow: 0 10px 26px rgba(8, 20, 38, .18); transition: all var(--xj-fast); }
+.hero-btn:hover { transform: translateY(-1px); box-shadow: 0 14px 32px rgba(8, 20, 38, .22); }
+.hero-btn .ic { width: 16px; height: 16px; }
+
 .help-stats { display: flex; align-items: center; padding: 18px 24px; margin-bottom: 20px; }
-.hs-item { flex: 1; text-align: center; }
+.hs-item { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.hs-icon { width: 26px; height: 26px; margin-bottom: 8px; }
 .hs-item b { display: block; font-size: 22px; font-weight: 850; color: var(--xj-ink); }
 .hs-item span { display: block; font-size: 12px; color: var(--xj-subtle); margin-top: 4px; }
-.hs-sep { width: 1px; height: 34px; background: var(--xj-line); }
+.hs-sep { width: 1px; height: 46px; background: var(--xj-line); }
+
+.fc-act { display: flex; align-items: center; gap: 6px; }
+.fc-act .ic { width: 16px; height: 16px; }
+
 @media (max-width: 720px) {
-  .help-head { flex-direction: column; }
-  .help-stats { flex-direction: column; gap: 12px; }
+  .help-stats { flex-direction: column; gap: 14px; }
   .hs-sep { display: none; }
 }
 </style>

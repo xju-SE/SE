@@ -17,12 +17,14 @@
       <div class="xj-field">
         <label class="xj-label">账号</label>
         <div class="xj-input-wrap" :class="{ error: errField === 'username' }">
+          <img :src="icProfile" class="ic" alt="" />
           <input class="xj-input" v-model="form.username" placeholder="设置登录账号" @keyup.enter="onSubmit" />
         </div>
       </div>
       <div class="xj-field">
         <label class="xj-label">密码</label>
         <div class="xj-input-wrap" :class="{ error: errField === 'password' }">
+          <img :src="icLock" class="ic" alt="" />
           <input class="xj-input" :type="showPwd ? 'text' : 'password'" v-model="form.password" placeholder="至少 6 位密码" @keyup.enter="onSubmit" />
           <span class="pwd-toggle" @click="showPwd = !showPwd">{{ showPwd ? '隐藏' : '显示' }}</span>
         </div>
@@ -30,6 +32,7 @@
       <div class="xj-field">
         <label class="xj-label">确认密码</label>
         <div class="xj-input-wrap" :class="{ error: errField === 'confirm' }">
+          <img :src="icLock" class="ic" alt="" />
           <input class="xj-input" :type="showPwd2 ? 'text' : 'password'" v-model="confirmPassword" placeholder="请再次输入密码" @keyup.enter="onSubmit" />
           <span class="pwd-toggle" @click="showPwd2 = !showPwd2">{{ showPwd2 ? '隐藏' : '显示' }}</span>
         </div>
@@ -49,7 +52,9 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { authApi } from '../api'
 import XLogo from '../components/XLogo.vue'
-import sceneBg from '../assets/bg/蓝色雕塑背景.png'
+import sceneBg from '../assets/bg/绿色雕塑背景.png'
+import icProfile from '../assets/icons/navigation/profile.svg'
+import icLock from '../assets/icons/status/lock.svg'
 
 const router = useRouter()
 
@@ -105,6 +110,7 @@ async function onSubmit() {
 .role-switch button.on { background: #fff; color: var(--xj-green-deep); box-shadow: 0 2px 8px rgba(15,30,53,.08); }
 
 .xj-field { margin-bottom: 14px; }
+.xj-input-wrap .ic { width: 16px; height: 16px; flex: none; }
 .pwd-toggle { font-size: 11px; color: var(--xj-subtle); cursor: pointer; flex: none; }
 .rc-submit { width: 100%; margin-top: 4px; }
 .rc-foot { text-align: center; font-size: 12.5px; color: var(--xj-muted); margin-top: 16px; }

@@ -1,0 +1,1 @@
+<script setup lang="ts">withDefaults(defineProps<{width?:string;height?:string;radius?:string}>(),{width:'100%',height:'14px',radius:'8px'})</script><template><div class="xj-skeleton" :style="{width,height,borderRadius:radius}" aria-hidden="true"></div></template>

@@ -1,15 +1,11 @@
 <template>
   <div class="aq-page xj-scene-study">
+    <PageHero :bg="heroBg" tone="study" size="low" title="管理后台 · 审核队列" subtitle="统一处理知识候选与身份认证的终审" />
     <div class="container">
-      <div class="aq-head">
-        <h1>管理后台 · 审核队列</h1>
-        <p>统一处理知识候选、求助回答与学生身份认证的终审</p>
-      </div>
-
       <!-- 运营统计卡片行 -->
       <div class="stat-row">
         <div class="xj-card stat-tile" v-for="s in statTiles" :key="s.label">
-          <component :is="s.icon" class="st-icon" />
+          <img :src="s.icon" class="st-icon" alt="" />
           <div class="st-main">
             <b>{{ s.value ?? '-' }}</b>
             <span>{{ s.label }}</span>
@@ -47,8 +43,8 @@
             <!-- 知识候选：隐私预检提示 + 三态 checklist -->
             <div v-if="row.targetType === 'KNOWLEDGE_ENTRY'" class="aq-privacy">
               <div class="xj-toast" :class="row.privacyAlert ? 'danger' : 'success'">
-                <IconAlert v-if="row.privacyAlert" class="xj-toast-icon" />
-                <IconCheck v-else class="xj-toast-icon" />
+                <img v-if="row.privacyAlert" :src="icLock" class="xj-toast-icon" alt="" />
+                <img v-else :src="icVerified" class="xj-toast-icon" alt="" />
                 <div>
                   <div class="xj-toast-title">{{ row.privacyAlert ? '自动预检发现疑似隐私信息，请重点核实' : '自动预检未发现隐私风险' }}</div>
                   <div class="xj-toast-desc">三项任一勾选，将强制转为退回</div>
@@ -62,8 +58,8 @@
             </div>
 
             <div class="aq-actions">
-              <button class="xj-btn study sm" :disabled="row.status !== 'PENDING'" @click="onApprove(row)">通过</button>
-              <button class="xj-btn secondary sm" :disabled="row.status !== 'PENDING'" @click="openReject(row)">退回</button>
+              <button class="xj-btn study sm" :disabled="row.status !== 'PENDING'" @click="onApprove(row)"><img :src="icSuccess" class="ic" alt="" />通过</button>
+              <button class="xj-btn secondary sm" :disabled="row.status !== 'PENDING'" @click="openReject(row)"><img :src="icClose" class="ic" alt="" />退回</button>
             </div>
           </article>
         </div>
@@ -80,7 +76,7 @@
       <template #footer>
         <button class="xj-btn secondary sm" @click="rejectDialog.visible = false">取消</button>
         <button class="xj-btn danger sm" :disabled="rejectDialog.submitting" @click="onReject">
-          {{ rejectDialog.submitting ? '提交中…' : '确认退回' }}
+          <img :src="icClose" class="ic" alt="" />{{ rejectDialog.submitting ? '提交中…' : '确认退回' }}
         </button>
       </template>
     </el-dialog>
@@ -88,12 +84,23 @@
 </template>
 
 <script setup lang="ts">
-import { computed, h, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useDemoStore, loadOr } from '../../store/demo'
 import { adminApi } from '../../api'
 import XLoader from '../../components/XLoader.vue'
+import PageHero from '../../components/PageHero.vue'
 import emptyImg from '../../assets/states/empty.svg'
+import heroBg from '../../assets/bg/蓝色雕塑背景.png'
+import icDocument from '../../assets/icons/content/document.svg'
+import icSuccess from '../../assets/icons/status/success.svg'
+import icError from '../../assets/icons/status/error.svg'
+import icAnnouncement from '../../assets/icons/content/announcement.svg'
+import icResources from '../../assets/icons/navigation/resources.svg'
+import icWarning from '../../assets/icons/status/warning.svg'
+import icLock from '../../assets/icons/status/lock.svg'
+import icVerified from '../../assets/icons/content/verified.svg'
+import icClose from '../../assets/icons/actions/close.svg'
 
 const demo = useDemoStore()
 
@@ -244,22 +251,13 @@ async function onReject() {
   }
 }
 
-const svg = (d: string) => () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.9, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, [h('path', { d })])
-const IconClipboard = svg('M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012 2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 12h6M9 16h6')
-const IconCheck = svg('M20 6L9 17l-5-5')
-const IconX = svg('M18 6L6 18M6 6l12 12')
-const IconBook = svg('M4 5a2 2 0 012-2h13v16H6a2 2 0 00-2 2zM19 3v18')
-const IconFlag = svg('M5 21V4M5 4h13l-3 4 3 4H5')
-const IconBadge = svg('M12 2l2.6 5.6L21 9l-4.5 4 1.2 6-5.7-3.2L6.3 19l1.2-6L3 9l6.4-1.4z')
-const IconAlert = svg('M12 9v4M12 17h.01M10.3 3.86L1.82 18a2 2 0 001.72 3h16.92a2 2 0 001.72-3L13.7 3.86a2 2 0 00-3.4 0z')
-
 const statTiles = computed(() => [
-  { label: '待审核合计', value: pendingTotal.value, icon: IconClipboard },
-  { label: '认证已通过', value: overview.value.authApprovedCount, icon: IconCheck },
-  { label: '认证已拒绝', value: overview.value.authRejectedCount, icon: IconX },
-  { label: '知识候选待审核', value: overview.value.knowledgePendingCount, icon: IconBook },
-  { label: '知识已发布', value: overview.value.knowledgePublishedCount, icon: IconFlag },
-  { label: '举报待处理', value: overview.value.reportPendingCount, icon: IconBadge },
+  { label: '待审核合计', value: pendingTotal.value, icon: icDocument },
+  { label: '认证已通过', value: overview.value.authApprovedCount, icon: icSuccess },
+  { label: '认证已拒绝', value: overview.value.authRejectedCount, icon: icError },
+  { label: '知识候选待审核', value: overview.value.knowledgePendingCount, icon: icAnnouncement },
+  { label: '知识已发布', value: overview.value.knowledgePublishedCount, icon: icResources },
+  { label: '举报待处理', value: overview.value.reportPendingCount, icon: icWarning },
 ])
 
 onMounted(() => {
@@ -270,13 +268,10 @@ onMounted(() => {
 
 <style scoped>
 .aq-page { padding: 26px 0 60px; }
-.aq-head { margin-bottom: 20px; }
-.aq-head h1 { margin: 0 0 6px; font-size: 25px; font-weight: 850; color: var(--xj-ink); }
-.aq-head p { margin: 0; font-size: 13.5px; color: var(--xj-muted); }
 
-.stat-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-bottom: 22px; }
+.stat-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin: 22px 0; }
 .stat-tile { padding: 16px; display: flex; align-items: center; gap: 12px; }
-.st-icon { width: 26px; height: 26px; flex: none; color: var(--accent-deep); }
+.st-icon { width: 30px; height: 30px; flex: none; }
 .st-main b { display: block; font-size: 20px; font-weight: 850; color: var(--xj-ink); line-height: 1.2; }
 .st-main span { font-size: 11px; color: var(--xj-subtle); }
 
@@ -290,12 +285,11 @@ onMounted(() => {
 .aq-title { margin: 11px 0 6px; font-size: 15.5px; font-weight: 780; color: var(--xj-ink); line-height: 1.4; }
 .aq-meta { display: flex; align-items: center; gap: 14px; font-size: 12px; color: var(--xj-subtle); }
 .aq-privacy { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--xj-line); display: flex; flex-direction: column; gap: 12px; }
-.aq-privacy .xj-toast.success .xj-toast-icon { color: var(--xj-success); }
-.aq-privacy .xj-toast.danger .xj-toast-icon { color: var(--xj-danger); }
 .aq-checklist { display: flex; flex-wrap: wrap; gap: 10px 22px; }
 .aq-check { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--xj-text); cursor: pointer; }
 .aq-check input { width: 15px; height: 15px; accent-color: var(--accent, var(--xj-blue)); cursor: pointer; }
 .aq-actions { display: flex; gap: 10px; margin-top: 15px; padding-top: 14px; border-top: 1px solid var(--xj-line); }
+.ic { width: 15px; height: 15px; flex: none; }
 
 :deep(.el-dialog) { border-radius: 16px; font-family: var(--xj-font); }
 :deep(.el-dialog__title) { font-weight: 800; color: var(--xj-ink); }

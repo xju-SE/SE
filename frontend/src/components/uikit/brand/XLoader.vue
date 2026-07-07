@@ -1,0 +1,1 @@
+<script setup lang="ts">withDefaults(defineProps<{size?:number;label?:string}>(),{size:44,label:'加载中…'})</script><template><span class="xj-loader-inline"><img src="../../../brand/x-loader-animated.svg" :style="{width:size+'px',height:size+'px'}" alt=""/><span>{{label}}</span></span></template>

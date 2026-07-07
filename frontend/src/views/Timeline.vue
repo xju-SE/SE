@@ -1,11 +1,8 @@
 <template>
   <div class="tl-page xj-scene-study">
+    <PageHero :bg="heroBg" tone="study" size="mid" title="成长时间线" subtitle="按学期规划关键节点，逾期不慌，按补救优先级逐个补上" />
     <div class="container">
-      <div class="tl-head">
-        <div>
-          <h1>成长时间线</h1>
-          <p>按学期规划关键节点，逾期不慌，按补救优先级逐个补上</p>
-        </div>
+      <div class="tl-route-row">
         <div class="route-seg">
           <button
             v-for="r in ROUTES" :key="r.value"
@@ -56,10 +53,10 @@
                   <span class="xj-badge" :class="importanceBadge(node.importance)">{{ importanceLabel(node.importance) }}</span>
                   <span v-if="node.progressStatus === 'DONE'" class="xj-badge success">已完成</span>
                 </div>
-                <div class="tl-meta">建议时间 · {{ node.suggestedTime || '未设定' }}</div>
+                <div class="tl-meta"><img :src="icCalendar" class="ic" alt="" />建议时间 · {{ node.suggestedTime || '未设定' }}</div>
 
                 <div v-if="isOverdue(node)" class="xj-toast danger tl-toast">
-                  <svg class="xj-toast-icon" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2"><circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16h.01" /></svg>
+                  <img :src="icWarning" class="xj-toast-icon" alt="" />
                   <div>
                     <div class="xj-toast-title">已逾期</div>
                     <div class="xj-toast-desc">补救优先级：{{ remediationLabel(node) }}，建议尽快跟进</div>
@@ -71,7 +68,7 @@
                     class="xj-btn study sm"
                     :disabled="markingId === node.id"
                     @click="markDone(node)"
-                  >{{ markingId === node.id ? '提交中…' : '标记完成' }}</button>
+                  ><img :src="icSuccess" class="ic" alt="" />{{ markingId === node.id ? '提交中…' : '标记完成' }}</button>
                 </div>
               </div>
             </el-timeline-item>
@@ -89,7 +86,12 @@ import { useDemoStore, loadOr } from '../store/demo'
 import { demoExperiences } from '../mock/demoData'
 import { timelineApi } from '../api'
 import XLoader from '../components/XLoader.vue'
+import PageHero from '../components/PageHero.vue'
 import emptyImg from '../assets/states/empty.svg'
+import heroBg from '../assets/bg/学业圈首页背景.png'
+import icCalendar from '../assets/icons/actions/calendar.svg'
+import icWarning from '../assets/icons/status/warning.svg'
+import icSuccess from '../assets/icons/status/success.svg'
 
 const demo = useDemoStore()
 
@@ -226,9 +228,7 @@ onMounted(load)
 
 <style scoped>
 .tl-page { padding: 26px 0 48px; }
-.tl-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 22px; }
-.tl-head h1 { margin: 0 0 6px; font-size: 26px; font-weight: 850; color: var(--xj-ink); }
-.tl-head p { margin: 0; font-size: 13.5px; color: var(--xj-subtle); }
+.tl-route-row { display: flex; justify-content: flex-end; margin: 22px 0 22px; }
 
 .route-seg { display: inline-flex; gap: 4px; padding: 4px; background: var(--xj-soft); border: 1px solid var(--xj-line); border-radius: var(--xj-pill); }
 .route-seg-item { height: 34px; padding: 0 15px; border: 0; background: transparent; border-radius: var(--xj-pill); font-size: 12.5px; font-weight: 650; color: var(--xj-muted); cursor: pointer; transition: all var(--xj-fast) var(--xj-ease); white-space: nowrap; }
@@ -241,14 +241,16 @@ onMounted(load)
 .tl-progress-head { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--xj-muted); margin-bottom: 8px; }
 .tl-progress-head b { color: var(--xj-ink); }
 .tl-progress-track { height: 8px; border-radius: 999px; background: var(--xj-soft); border: 1px solid var(--xj-line); overflow: hidden; }
-.tl-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-deep)); border-radius: 999px; transition: width .3s var(--xj-ease); }
+.tl-progress-fill { height: 100%; background: linear-gradient(90deg, var(--xj-blue), var(--xj-blue-deep)); border-radius: 999px; transition: width .3s var(--xj-ease); }
 
 .tl-card { padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
 .tl-card.overdue { border-color: #FFD5D1; }
 .tl-top { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 .tl-title { margin: 0; font-size: 14.5px; font-weight: 780; color: var(--xj-ink); flex: 1; min-width: 0; }
 .tl-title.overdue { color: var(--xj-danger); }
-.tl-meta { font-size: 12px; color: var(--xj-subtle); }
+.tl-meta { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--xj-subtle); }
+.tl-meta .ic { width: 14px; height: 14px; flex: none; }
+.tl-actions .ic { width: 15px; height: 15px; }
 .tl-toast { margin-top: 2px; }
 .tl-actions { margin-top: 4px; display: flex; justify-content: flex-end; }
 

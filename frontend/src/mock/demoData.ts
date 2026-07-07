@@ -80,11 +80,13 @@ export const demoTagsStudy = [
 ]
 
 // 通知（后端 notification）
+// refType/refId 对齐后端 Notification 实体真实字段域（HELP_TICKET/KNOWLEDGE_ENTRY/AUTH_APPLICATION 等），
+// refId 复用 HelpList/HelpCreate 与知识库演示数据中的同一批 id，便于消息中心→详情联动演示。
 export const demoNotifications = [
-  { id: 1, type: 'HELP_MATCH', title: '有一条你可能能回答的求助', content: '「想转专业到计科…」与你的专业标签匹配', time: '10分钟前', read: false },
-  { id: 2, type: 'ADOPT', title: '你的回答被采纳了', content: '你在「数据结构期末怎么复习」中的回答已被采纳，将进入知识候选', time: '2小时前', read: false },
-  { id: 3, type: 'AUDIT_RESULT', title: '知识条目审核通过', content: '你提交的「机器学习导论笔记」已通过审核并发布', time: '昨天', read: true },
-  { id: 4, type: 'SYSTEM', title: '欢迎来到 XJOURNEY', content: '完善你的成长画像，解锁个性化路径推荐', time: '3天前', read: true },
+  { id: 1, type: 'HELP_MATCH', title: '有一条你可能能回答的求助', content: '「想转专业到计算机科学与技术，课程衔接和考核要求有学长了解吗？」与你的专业标签匹配，去看看能不能帮上忙。', time: '10分钟前', read: false, refType: 'HELP_TICKET', refId: 101 },
+  { id: 2, type: 'ADOPT', title: '你的回答被采纳了', content: '你在「数据结构期末总是卡在动态规划，有没有稳的复习路线？」中的回答已被采纳，将进入知识候选库供更多同学参考。', time: '2小时前', read: false, refType: 'HELP_TICKET', refId: 103 },
+  { id: 3, type: 'AUDIT_RESULT', title: '知识条目审核通过', content: '你提交的「机器学习导论 笔记整理（持续更新中）」已通过审核并正式发布到学业圈知识库。', time: '昨天 09:20', read: true, refType: 'KNOWLEDGE_ENTRY', refId: 12 },
+  { id: 4, type: 'SYSTEM', title: '欢迎来到 XJOURNEY', content: '完善你的成长画像，解锁个性化路径推荐；有任何求助或经验，都可以在双圈里发布。', time: '3天前', read: true, refType: null, refId: null },
 ]
 
 // 当前用户（演示）
@@ -101,7 +103,8 @@ const KNOWLEDGE_TAG_CATEGORY: Record<string, string> = {
 }
 export interface DemoKnowledgeEntry {
   id: number; title: string; category: string; applicableScope: string
-  updatedAt: string; viewCount: number; content: string; authorName: string; avatarIdx: number
+  updatedAt: string; viewCount: number; usefulCount: number; feedbackCount: number
+  content: string; authorName: string; avatarIdx: number; tags: string[]
 }
 export const demoKnowledgeEntries: DemoKnowledgeEntry[] = demoStudyFeed
   .filter((p) => p.source === '知识库')
@@ -111,10 +114,13 @@ export const demoKnowledgeEntries: DemoKnowledgeEntry[] = demoStudyFeed
     category: KNOWLEDGE_TAG_CATEGORY[p.tag] || 'COURSE',
     applicableScope: '计算机科学与技术专业',
     updatedAt: p.time,
-    viewCount: p.a,
+    viewCount: p.a * 13,
+    usefulCount: p.a,
+    feedbackCount: p.b,
     content: p.excerpt,
     authorName: p.author,
     avatarIdx: p.avatarIdx,
+    tags: [p.tag, '期末复习', '课后习题'],
   }))
 
 // 个人经历（= 校友路径卡 / 成长时间线，后端真实模块）

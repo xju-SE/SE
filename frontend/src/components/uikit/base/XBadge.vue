@@ -1,0 +1,1 @@
+<script setup lang="ts">withDefaults(defineProps<{tone?:'success'|'info'|'warning'|'danger'|'purple'|'neutral';dot?:boolean}>(),{tone:'neutral'})</script><template><span class="xj-badge" :class="tone"><span v-if="dot" style="width:6px;height:6px;border-radius:50%;background:currentColor"></span><slot/></span></template>

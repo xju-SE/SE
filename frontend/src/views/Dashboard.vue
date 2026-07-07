@@ -9,10 +9,10 @@
         <p class="hero-sub">{{ isLife ? '发现校园生活，连接身边的人' : '共享学习资源，记录成长轨迹' }}</p>
         <div class="hero-actions">
           <button class="xj-btn solid" @click="$router.push('/help/create')">
-            <IconPlus /> 发起求助
+            <img class="hb-ic" :src="icPlus" alt="" /> 发起求助
           </button>
           <button class="xj-btn" @click="$router.push(isLife ? '/opportunities' : '/knowledge')">
-            {{ isLife ? '浏览活动机会' : '找学习资料' }}
+            <img class="hb-ic" :src="isLife ? icActivity : icResources" alt="" /> {{ isLife ? '浏览活动机会' : '找学习资料' }}
           </button>
         </div>
       </div>
@@ -41,10 +41,10 @@
           <div class="xj-card side-card">
             <div class="sc-head"><span class="sc-title">快捷入口</span></div>
             <div class="quick-grid">
-              <div class="quick-item" @click="$router.push('/help')"><IconHelp class="qi-icon" /><span class="qi-label">我的求助</span></div>
-              <div class="quick-item" @click="$router.push('/knowledge')"><IconBook class="qi-icon" /><span class="qi-label">经验知识库</span></div>
-              <div class="quick-item" @click="$router.push('/opportunities')"><IconStar class="qi-icon" /><span class="qi-label">机会组队</span></div>
-              <div class="quick-item" @click="$router.push('/timeline')"><IconRoute class="qi-icon" /><span class="qi-label">成长时间线</span></div>
+              <div class="quick-item" @click="$router.push('/help')"><img class="qi-icon" :src="icComment" alt="" /><span class="qi-label">我的求助</span></div>
+              <div class="quick-item" @click="$router.push('/knowledge')"><img class="qi-icon" :src="icResources" alt="" /><span class="qi-label">经验知识库</span></div>
+              <div class="quick-item" @click="$router.push('/opportunities')"><img class="qi-icon" :src="icActivity" alt="" /><span class="qi-label">机会组队</span></div>
+              <div class="quick-item" @click="$router.push('/timeline')"><img class="qi-icon" :src="icCalendar" alt="" /><span class="qi-label">成长时间线</span></div>
             </div>
           </div>
 
@@ -53,9 +53,7 @@
             <div class="pm-sub">坚持记录，积累每一份进步</div>
             <div class="streak-week">
               <div class="streak-day" v-for="(d, i) in ['一','二','三','四','五','六','今']" :key="i">
-                <div class="streak-dot" :class="{ done: i < 5 || i === 6 }">
-                  <svg v-if="i < 5 || i === 6" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#fff" stroke-width="3"><path d="M5 13l4 4L19 7" /></svg>
-                </div>{{ d }}
+                <div class="streak-dot" :class="{ done: i < 5 || i === 6 }"></div>{{ d }}
               </div>
             </div>
           </div>
@@ -67,7 +65,7 @@
             <div class="xj-tabs feed-tabs">
               <button v-for="(t, i) in tabs" :key="t" class="xj-tab" :class="{ active: activeTab === i, study: !isLife }" @click="activeTab = i">{{ t }}</button>
             </div>
-            <div class="feed-sort">最新 <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" /></svg></div>
+            <div class="feed-sort">最新 <img class="sort-ic" :src="icChevron" alt="" /></div>
           </div>
 
           <XLoader v-if="loading" :size="52" text="加载中…" />
@@ -79,7 +77,7 @@
                   <div class="a-name">{{ p.author }} <span class="xj-badge" :class="isLife ? 'success' : 'info'">{{ p.tag }}</span></div>
                   <div class="a-meta"><span>{{ p.time }}</span><span>· {{ p.source }}</span></div>
                 </div>
-                <div class="fc-more">···</div>
+                <button class="fc-more" type="button"><img :src="icMore" alt="更多" /></button>
               </div>
               <h3 class="fc-title" @click="openPost(p)">{{ p.title }}</h3>
               <p class="fc-excerpt">{{ p.excerpt }}</p>
@@ -90,9 +88,10 @@
                 </div>
               </div>
               <div class="fc-actions">
-                <span class="fc-act"><IconThumb class="ic" /> {{ p.tag.includes('求助') ? '回答' : '有用' }} {{ p.a }}</span>
-                <span class="fc-act"><IconComment class="ic" /> {{ p.tag.includes('求助') ? '追问' : '评价' }} {{ p.b }}</span>
-                <span class="fc-act" @click="openPost(p)"><IconLink class="ic" /> 详情</span>
+                <span class="fc-act"><img class="ic" :src="icHeart" alt="" /> {{ p.tag.includes('求助') ? '回答' : '有用' }} {{ p.a }}</span>
+                <span class="fc-act"><img class="ic" :src="icComment" alt="" /> {{ p.tag.includes('求助') ? '追问' : '评价' }} {{ p.b }}</span>
+                <span class="fc-act"><img class="ic" :src="icEye" alt="" /> 浏览 {{ viewsOf(p) }}</span>
+                <span class="fc-act" @click="openPost(p)"><img class="ic" :src="icLink" alt="" /> 详情</span>
               </div>
             </article>
           </div>
@@ -125,7 +124,8 @@
 
           <div class="xj-card side-card">
             <div class="sc-head"><span class="sc-title">圈内通知</span><span class="sc-more" @click="$router.push('/notifications')">更多 ›</span></div>
-            <div class="hot-item" v-for="n in notis" :key="n.id" @click="$router.push('/notifications')" style="align-items:flex-start">
+            <div class="hot-item noti-row" v-for="n in notis" :key="n.id" @click="$router.push('/notifications')">
+              <img class="noti-ic" :src="icBell" alt="" />
               <div class="h-main"><div class="h-title">{{ n.title }}</div><div class="h-meta">{{ n.time }}</div></div>
             </div>
           </div>
@@ -136,7 +136,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, h } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useDemoStore, loadOr } from '../store/demo'
 import { useAuthStore } from '../store/auth'
@@ -148,6 +148,18 @@ import {
 import { knowledgeApi, helpApi } from '../api'
 import bgLife from '../assets/bg/双圈首页生活圈背景.png'
 import bgStudy from '../assets/bg/双圈首页学业圈背景.png'
+// UI Kit 正式图标（<img> 引用，替换全部手绘内联 svg）
+import icPlus from '../assets/icons/actions/plus.svg'
+import icComment from '../assets/icons/actions/comment.svg'
+import icResources from '../assets/icons/navigation/resources.svg'
+import icActivity from '../assets/icons/navigation/activity.svg'
+import icCalendar from '../assets/icons/actions/calendar.svg'
+import icHeart from '../assets/icons/actions/heart.svg'
+import icLink from '../assets/icons/actions/link.svg'
+import icEye from '../assets/icons/actions/eye.svg'
+import icBell from '../assets/icons/actions/bell.svg'
+import icMore from '../assets/icons/actions/more.svg'
+import icChevron from '../assets/icons/actions/chevron-down.svg'
 
 const route = useRoute()
 const router = useRouter()
@@ -176,12 +188,12 @@ function mapReal(k: any[], hlp: any[]): any[] {
   ;(k || []).slice(0, 4).forEach((e: any, i: number) => posts.push({
     id: 'k' + e.id, author: e.authorName || '知识贡献者', avatarIdx: i, tag: e.categoryLabel || '知识条目',
     time: e.updatedAt || '', source: '知识库', title: e.title, excerpt: e.summary || e.applicableScope || '',
-    images: [], a: e.usefulCount ?? e.viewCount ?? 0, b: e.feedbackCount ?? 0,
+    images: [], a: e.usefulCount ?? e.viewCount ?? 0, b: e.feedbackCount ?? 0, views: e.viewCount,
   }))
   ;(hlp || []).slice(0, 3).forEach((t: any, i: number) => posts.push({
     id: 'h' + t.id, author: t.askerName || '求助者', avatarIdx: i + 4, tag: '结构化求助',
     time: t.createdAt || '', source: '求助单·' + (t.statusLabel || ''), title: t.title, excerpt: t.content || '',
-    images: [], a: t.answerCount ?? 0, b: t.followupCount ?? 0,
+    images: [], a: t.answerCount ?? 0, b: t.followupCount ?? 0, views: t.viewCount,
   }))
   return posts
 }
@@ -209,17 +221,26 @@ function openPost(p: any) {
 onMounted(loadAll)
 watch(() => route.query.scene, () => { activeTab.value = 0; loadAll() })
 
-const svg = (d: string) => () => h('svg', { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'stroke-width': 1.9, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, [h('path', { d })])
-const IconPlus = svg('M12 5v14M5 12h14')
-const IconHelp = svg('M9.1 9a3 3 0 115.8 1c0 2-3 2-3 4M12 17h.01')
-const IconBook = svg('M4 5a2 2 0 012-2h13v16H6a2 2 0 00-2 2zM19 3v18')
-const IconStar = svg('M12 3l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 18l-5.9 3 1.2-6.5L2.5 9.9 9.1 9z')
-const IconRoute = svg('M6 19a2 2 0 100-4 2 2 0 000 4zM18 9a2 2 0 100-4 2 2 0 000 4zM8 17h6a3 3 0 003-3V9')
-const IconThumb = svg('M7 10v11M2 14v5a2 2 0 002 2h12l3-8v-1h-6l1-5a2 2 0 00-2-2l-5 8z')
-const IconComment = svg('M21 15a2 2 0 01-2 2H8l-4 4V5a2 2 0 012-2h13a2 2 0 012 2z')
-const IconLink = svg('M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1')
+// 浏览量：真实数据用后端 viewCount，演示兜底用互动量派生（纯展示，不臆造接口）
+const viewsOf = (p: any) => p.views ?? p.a * 7 + p.b
 </script>
 
 <style scoped>
 .dash { padding-bottom: 30px; }
+/* 英雄横幅按钮内嵌 UI Kit 图标 */
+.hb-ic { width: 18px; height: 18px; display: block; }
+/* 信息流：对照参考图密度 —— 标题 16 / 摘要 13 / 卡间距 16 */
+.feed-list { gap: 16px; }
+.fc-title { font-size: 16px; }
+.fc-excerpt { font-size: 13px; }
+.feed-sort .sort-ic { width: 13px; height: 13px; display: block; opacity: .7; }
+.fc-more { display: inline-flex; align-items: center; justify-content: center; padding: 4px; background: none; border: 0; cursor: pointer; border-radius: 8px; transition: background var(--xj-fast); }
+.fc-more:hover { background: var(--xj-soft); }
+.fc-more img { width: 18px; height: 18px; display: block; }
+.fc-actions { gap: 20px; }
+/* 圈内通知：每条左侧小图标 */
+.noti-row { align-items: flex-start; }
+.noti-ic { width: 26px; height: 26px; flex: none; margin-top: 2px; }
+/* 连续进度勾选：CSS 描边对勾（替换手绘 svg），生活/学业圈各自品牌色 */
+.streak-dot.done::after { content: ""; width: 6px; height: 11px; border: solid #fff; border-width: 0 3px 3px 0; transform: rotate(45deg); margin-top: -2px; }
 </style>
