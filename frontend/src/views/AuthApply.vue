@@ -318,9 +318,10 @@ onMounted(load)
 <style scoped>
 .aa-page { padding-bottom: 60px; }
 /* 顶部横幅：蓝色雕塑整图,右侧显雕塑,左侧渐变 */
-.aa-hero { position: relative; overflow: hidden; height: 210px; display: flex; align-items: center; }
-.aa-hero-bg { position: absolute; inset: 0; background-size: cover; background-position: right center; }
-.aa-hero-mask { position: absolute; inset: 0; background: linear-gradient(100deg, rgba(23,72,183,.9) 0%, rgba(37,99,235,.56) 38%, rgba(47,125,246,.16) 64%, rgba(96,165,250,0) 88%); }
+.aa-hero { position: relative; overflow: hidden; height: 230px; display: flex; align-items: center; }
+/* 雕塑在图片右下角,故 right bottom;遮罩只压左侧衬标题,右侧透出雕塑 */
+.aa-hero-bg { position: absolute; inset: 0; background-size: cover; background-position: right bottom; }
+.aa-hero-mask { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(23,72,183,.82) 0%, rgba(37,99,235,.44) 24%, rgba(47,125,246,.08) 46%, rgba(255,255,255,0) 62%); }
 .aa-hero-inner { position: relative; z-index: 2; }
 .aa-hero-title { margin: 0; font-size: 34px; font-weight: 850; letter-spacing: 2px; color: #fff; text-shadow: 0 3px 16px rgba(8,20,38,.28); }
 .aa-hero-sub { margin: 10px 0 0; font-size: 15px; color: #fff; opacity: .95; font-weight: 500; }

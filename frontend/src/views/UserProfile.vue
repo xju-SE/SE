@@ -183,7 +183,7 @@ async function onToggleFollow() {
 .uprofile { padding-bottom: 50px; min-height: calc(100vh - 64px); }
 .up-hero { position: relative; overflow: hidden; color: #fff; min-height: 280px; display: flex; align-items: center; }
 /* 背景居中偏上,避免雕塑被裁到只剩下沿(修“背景上移”) */
-.up-bg { position: absolute; inset: 0; background-size: cover; background-position: center 35%; }
+.up-bg { position: absolute; inset: 0; background-size: cover; background-position: right bottom; }
 .up-mask { position: absolute; inset: 0; }
 .xj-scene-study .up-mask { background: linear-gradient(95deg, rgba(234,242,255,.95) 0%, rgba(219,234,255,.72) 28%, rgba(198,221,255,.22) 52%, rgba(255,255,255,0) 74%); }
 .xj-scene-life .up-mask { background: linear-gradient(95deg, rgba(233,249,239,.95) 0%, rgba(213,242,224,.72) 28%, rgba(186,232,204,.22) 52%, rgba(255,255,255,0) 74%); }
