@@ -79,13 +79,14 @@
             <div class="sc-head"><span class="sc-title">TA 的标签</span></div>
             <div class="up-tags2"><span class="fc-tag" v-for="t in person.tags" :key="t"># {{ t }}</span></div>
           </div>
-
-          <div class="xj-card side-card">
-            <HeatmapMatrix :tone="tone === 'xj-scene-life' ? 'life' : 'study'"
-              :title="tone === 'xj-scene-life' ? '生活圈活跃热力图' : '学业贡献热力图'"
-              :streak="18 + (id % 20)" :longest="40 + (id % 30)" :total="120 + (id % 100)" :seed="id" />
-          </div>
         </aside>
+      </div>
+
+      <!-- 活跃热力图：单独占整行(宽度足够,避免在窄侧栏被拉变形) -->
+      <div class="xj-card side-card up-heat">
+        <HeatmapMatrix :tone="tone === 'xj-scene-life' ? 'life' : 'study'"
+          :title="tone === 'xj-scene-life' ? '生活圈活跃热力图' : '学业贡献热力图'"
+          :streak="18 + (id % 20)" :longest="40 + (id % 30)" :total="120 + (id % 100)" :seed="id" />
       </div>
     </div>
   </div>
@@ -210,6 +211,7 @@ async function onToggleFollow() {
 /* 内容区 */
 .up-body { margin-top: 22px; }
 .up-grid { display: grid; grid-template-columns: 1fr 320px; gap: 18px; align-items: start; }
+.up-heat { margin-top: 16px; }
 .up-col-main, .up-col-side { display: flex; flex-direction: column; gap: 16px; }
 .up-post { display: flex; gap: 14px; padding: 14px 0; border-top: 1px solid var(--xj-line); cursor: pointer; transition: background var(--xj-fast); }
 .up-post:first-of-type { border-top: 0; }
