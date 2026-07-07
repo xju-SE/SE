@@ -37,12 +37,17 @@
               <span class="kd-stat"><img :src="icBookmark" class="ic" />收藏 {{ demoMeta?.favorite ?? 0 }}</span>
             </div>
 
+            <!-- 帖子大图图集（对照"学业圈帖子/生活圈帖子"参考图：首图大、其余并排） -->
+            <div v-if="entry.images && entry.images.length" class="kd-gallery" :class="'g' + Math.min(entry.images.length, 3)">
+              <img v-for="(im, i) in entry.images.slice(0, 3)" :key="i" class="kd-gallery-img" :src="im" alt="" />
+            </div>
+
             <div class="divider"></div>
 
-            <!-- 正文：拆分为"资料包括 / 适用建议"两个小节，小标题带品牌色左条（对照参考图的结构化正文排版） -->
+            <!-- 正文：有小标题(知识条目结构化)则显示左条,否则按文章段落展示 -->
             <div class="kd-body">
               <div v-for="(sec, i) in contentSections" :key="i" class="kd-section">
-                <div class="kd-section-head"><span class="kd-section-bar"></span>{{ sec.label }}</div>
+                <div v-if="sec.label" class="kd-section-head"><span class="kd-section-bar"></span>{{ sec.label }}</div>
                 <p class="kd-section-text">{{ sec.text }}</p>
               </div>
             </div>
@@ -171,7 +176,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useDemoStore, loadOr } from '../store/demo'
-import { avatarFor, demoKnowledgeEntries } from '../mock/demoData'
+import { avatarFor, demoKnowledgeEntries, demoPostById } from '../mock/demoData'
 import { knowledgeApi } from '../api'
 import XLoader from '../components/XLoader.vue'
 import PageHero from '../components/PageHero.vue'
@@ -260,18 +265,18 @@ const contentSections = computed(() => {
   const preset = DEMO_CONTENT_SECTIONS[e.id]
   if (preset) return preset
   const raw = (e.content || '暂无正文内容').trim()
-  return [
-    { label: '资料包括', text: raw },
-    { label: '适用建议', text: '建议结合自身薄弱环节针对性复习，遇到疑问可在评论区与作者交流。' },
-  ]
+  // 文章体：按空行/换行拆成段落，无小标题，像正常文章一段段展示
+  const paras = raw.split(/\n{2,}|\n/).map((s: string) => s.trim()).filter(Boolean)
+  if (paras.length > 1) return paras.map((text: string) => ({ label: '', text }))
+  return [{ label: '', text: raw }]
 })
 
 async function load() {
   loading.value = true
   entry.value = await loadOr(demo.enabled,
     () => knowledgeApi.detail(id),
-    // 演示兜底：精确匹配不到(如生活圈帖子id)就退回首条,保证详情页不空白
-    demoKnowledgeEntries.find((e) => e.id === id) || demoKnowledgeEntries[0] || null)
+    // 演示兜底：按 id 精确取点击的那条帖子(带大图+文章正文);再退知识条目;最后首条,保证不空白
+    demoPostById(id) || demoKnowledgeEntries.find((e) => e.id === id) || demoKnowledgeEntries[0] || null)
   await loadRelated()
   loading.value = false
 }
@@ -328,6 +333,15 @@ onMounted(load)
 
 .kd-stats { display: flex; align-items: center; flex-wrap: wrap; gap: 20px; }
 .kd-stat { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--xj-muted); font-weight: 600; }
+
+/* 帖子大图图集：首图大图,多图时并排;圆角、覆盖裁切 */
+.kd-gallery { display: grid; gap: 8px; margin: 16px 0 4px; }
+.kd-gallery.g1 { grid-template-columns: 1fr; }
+.kd-gallery.g2 { grid-template-columns: 1fr 1fr; }
+.kd-gallery.g3 { grid-template-columns: 2fr 1fr 1fr; }
+.kd-gallery.g3 .kd-gallery-img:first-child { grid-row: span 2; }
+.kd-gallery-img { width: 100%; height: 100%; max-height: 420px; min-height: 150px; object-fit: cover; border-radius: 12px; display: block; background: var(--xj-soft); }
+.kd-gallery.g1 .kd-gallery-img { max-height: 460px; }
 
 .kd-body { margin-top: 6px; }
 .kd-section { margin-top: 18px; }

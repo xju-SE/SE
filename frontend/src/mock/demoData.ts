@@ -125,6 +125,38 @@ export const demoKnowledgeEntries: DemoKnowledgeEntry[] = demoStudyFeed
     tags: [p.tag, '期末复习', '课后习题'],
   }))
 
+// 帖子正文（文章体，详情页展示，段落用 \n\n 分隔）；缺省时用 excerpt。
+const DEMO_POST_BODY: Record<number, string> = {
+  1: '发现图书馆五楼靠东的玻璃阅览室最近人少又安静，上午的阳光斜斜洒进来，整个人都放松下来了。\n\n最近在啃数据结构，找一个采光好、不吵的位置真的会让效率高很多。分享给同样在备考的同学：五楼玻璃房、三楼靠窗的长桌都不错，早上来占座基本都有位置。一起加油呀～',
+  2: '春日校园摄影大赛正式开始！用你的镜头记录这个春天的校园——不管是清晨的操场、开花的林荫道，还是自习室里认真的侧影，都欢迎投稿。\n\n投稿时间：4.15 - 5.15。优秀作品将获得精美礼品，并在校园公众号展出。投稿方式与评选细则见活动详情，期待你的作品。',
+  3: '整理了报到后最需要尽快搞定的几件事，新生照着做基本不会踩坑：\n\n一、校园卡激活：到一卡通中心或线上小程序激活，绑定后可用于食堂、图书馆、热水；二、快递点：校内共三个（东门菜鸟、南区京东、西区邮政），按短信提示到对应点位取件；三、校园网：连接 XJU-WLAN 后打开自助注册页，用学号+初始密码登录即可上网。',
+  4: '整理了几个适合周末放松的好去处，公交路线和人均花费都写清楚了，收藏起来慢慢逛。\n\n城市博物馆（免费，2 号线直达）、老城区慢生活街区（人均 40，适合拍照）、近郊湿地公园（骑行往返约 1 小时）。周末不想窝在宿舍的话，挑一个出发吧，记得带上相机。',
+  15: '整理了操作系统进程管理这一章的核心考点与高频题型，配套思维导图，适合期末冲刺快速回顾。\n\n涵盖：进程与线程的区别、五状态模型、经典调度算法（FCFS/SJF/RR/优先级）、死锁的四个必要条件与银行家算法、进程同步（PV 操作、生产者消费者、读者写者）。每个考点都附了典型例题与易错点提醒。',
+  16: 'C 语言常用算法代码模板合集，排序、查找、链表、树、图的可直接套用模板，均已在 VS Code 与 Dev-C++ 中测试通过。\n\n包含：快排/归并/堆排序、二分查找、单双链表增删改查、二叉树遍历（递归+非递归）、图的 BFS/DFS 与最短路。每个模板都写了注释与调用示例，考试或刷题直接拿来用。',
+}
+
+// 详情页按 id 精确取帖子（跨生活/学业圈），返回详情形状(带 images + 文章正文)，用于演示态点击帖子→对应详情
+export function demoPostById(id: number): any {
+  const p = [...demoLifeFeed, ...demoStudyFeed].find((x) => x.id === id)
+  if (!p) return null
+  const isLife = demoLifeFeed.some((x) => x.id === id)
+  return {
+    id: p.id,
+    title: p.title,
+    category: KNOWLEDGE_TAG_CATEGORY[p.tag] || (isLife ? 'LIFE' : 'COURSE'),
+    applicableScope: `${p.source} · ${p.grade}`,
+    updatedAt: p.time,
+    viewCount: p.a * 7 + p.b,
+    usefulCount: p.a,
+    feedbackCount: p.b,
+    content: DEMO_POST_BODY[id] || p.excerpt,
+    images: p.images || [],
+    authorName: p.author,
+    avatarIdx: p.avatarIdx,
+    tags: p.tags || [p.tag],
+  }
+}
+
 // 个人经历（= 校友路径卡 / 成长时间线，后端真实模块）
 export const demoExperiences = [
   { year: '2023', title: '入学 · 计算机科学与技术', desc: '加入 ACM 算法训练营，开始系统学习数据结构与算法。' },
