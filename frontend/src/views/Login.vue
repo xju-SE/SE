@@ -99,7 +99,7 @@ function start() {
 }
 
 async function onSubmit() {
-  if (!ready.value) return
+  if (!started.value) return
   if (!form.username || !form.password) {
     err.value = true
     ElMessage.warning('请输入账号和密码')
@@ -157,7 +157,7 @@ const XLoaderInline = () => h('span', { class: 'lc-spinner' })
 .ready .right-scene { opacity: .38; }
 .right-veil { position: absolute; inset: 0; background: linear-gradient(120deg, rgba(22,166,90,.35), rgba(30,111,224,.15)); }
 .right-slogan { position: absolute; top: 34px; right: 42px; color: rgba(255,255,255,.92); font-size: 14px; font-weight: 700; letter-spacing: .6px;
-  opacity: 0; transition: opacity .5s ease .9s; }
+  opacity: 0; transition: opacity .5s ease .9s; pointer-events: none; user-select: none; }
 .started .right-slogan { opacity: 1; }
 
 /* 登录卡 */
@@ -166,7 +166,8 @@ const XLoaderInline = () => h('span', { class: 'lc-spinner' })
   transition: opacity .6s var(--xj-ease) 1s, transform .6s var(--xj-ease) 1s; }
 .started .login-card { opacity: 1; transform: translateY(-50%) translateX(0); }
 .login-card :is(input, button) { pointer-events: none; }
-.ready .login-card :is(input, button) { pointer-events: auto; }
+/* 表单在转场开始(started)即可交互,不再等 ready 结束——避免用户点不动 */
+.started .login-card :is(input, button) { pointer-events: auto; }
 .lc-brand { display: flex; justify-content: center; align-items: center; width: 100%; margin: 2px 0 16px; }
 .lc-brand :deep(.xlogo) { margin: 0 auto; }
 .lc-title { margin: 0; text-align: center; font-size: 22px; font-weight: 850; color: var(--xj-ink); }
@@ -186,7 +187,9 @@ const XLoaderInline = () => h('span', { class: 'lc-spinner' })
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* 左侧介绍 */
-.stage-left { position: absolute; inset: 0; display: flex; align-items: center; padding-left: 8%; }
+/* inset:0 全屏,但仅左侧有品牌介绍文字;必须 pointer-events:none 让点击穿透到右侧登录卡,否则整屏遮挡表单 */
+.stage-left { position: absolute; inset: 0; display: flex; align-items: center; padding-left: 8%; pointer-events: none; }
+.intro-block { pointer-events: auto; }
 /* 简介区收窄：分界线在文案底部高度处约 38%，8% 起步 → 宽度 ≤26vw 才不越过斜线 */
 .intro-block { max-width: min(340px, 26vw); margin-top: 20vh; opacity: 0; transform: translateY(16px); transition: opacity .5s ease .35s, transform .5s var(--xj-ease) .35s; }
 .started .intro-block { opacity: 1; transform: translateY(0); }
