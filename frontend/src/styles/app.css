@@ -42,11 +42,13 @@ a{color:inherit;text-decoration:none}
 .container{max-width:1320px;margin:0 auto;padding:0 30px}
 
 /* ---------- 英雄横幅 ---------- */
-.circle-hero{position:relative;overflow:hidden;height:296px;display:flex;align-items:center;color:#fff}
-.circle-hero .hero-bg{position:absolute;inset:0;background-size:cover;background-position:center top;transform:scale(1.02)}
+.circle-hero{position:relative;overflow:hidden;height:340px;display:flex;align-items:center;color:#fff}
+/* 横幅整图显示更全:去掉裁切缩放,居中,不裁上下 */
+.circle-hero .hero-bg{position:absolute;inset:0;background-size:cover;background-position:center center}
 .circle-hero .hero-mask{position:absolute;inset:0}
-.xj-scene-life .circle-hero .hero-mask{background:linear-gradient(100deg,rgba(18,155,82,.94) 0%,rgba(34,197,94,.72) 42%,rgba(4,191,165,.30) 74%,rgba(20,184,196,.05) 100%)}
-.xj-scene-study .circle-hero .hero-mask{background:linear-gradient(100deg,rgba(23,72,183,.94) 0%,rgba(37,99,235,.72) 42%,rgba(47,125,246,.30) 74%,rgba(96,165,250,.05) 100%)}
+/* 遮罩减轻并更快淡出,让横幅图显示更完整(左侧保留少量色以衬标题) */
+.xj-scene-life .circle-hero .hero-mask{background:linear-gradient(100deg,rgba(18,155,82,.78) 0%,rgba(34,197,94,.42) 34%,rgba(4,191,165,.12) 60%,rgba(20,184,196,0) 82%)}
+.xj-scene-study .circle-hero .hero-mask{background:linear-gradient(100deg,rgba(23,72,183,.78) 0%,rgba(37,99,235,.42) 34%,rgba(47,125,246,.12) 60%,rgba(96,165,250,0) 82%)}
 .circle-hero .hero-inner{position:relative;z-index:2;width:100%}
 .circle-hero .hero-title{margin:0;font-size:52px;font-weight:850;letter-spacing:3px;line-height:1.05;text-shadow:0 4px 24px rgba(8,20,38,.22)}
 .circle-hero .hero-sub{margin:16px 0 26px;font-size:18px;font-weight:500;opacity:.95}

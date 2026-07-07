@@ -1,9 +1,14 @@
 <template>
   <div class="aa-page xj-scene-study">
-    <!-- 全屏蓝色雕塑背景 + 轻遮罩 -->
-    <div class="aa-bg" :style="{ backgroundImage: `url(${heroBg})` }"></div>
-    <div class="aa-bg-scrim"></div>
-    <PageHero :bg="heroBg" tone="study" size="mid" title="身份认证" subtitle="完成身份认证后，可解锁校友互助、经验分享等更多能力" />
+    <!-- 顶部横幅：蓝色雕塑背景(雕塑在右侧,左侧渐变衬标题) -->
+    <section class="aa-hero">
+      <div class="aa-hero-bg" :style="{ backgroundImage: `url(${heroBg})` }"></div>
+      <div class="aa-hero-mask"></div>
+      <div class="container aa-hero-inner">
+        <h1 class="aa-hero-title">身份认证</h1>
+        <p class="aa-hero-sub">完成身份认证后，可解锁校友互助、经验分享等更多能力</p>
+      </div>
+    </section>
 
     <div class="container aa-container">
       <div class="aa-grid">
@@ -311,11 +316,14 @@ onMounted(load)
 </script>
 
 <style scoped>
-.aa-page { padding-bottom: 60px; position: relative; }
-/* 全屏蓝色雕塑背景固定铺满 + 轻遮罩 */
-.aa-bg { position: fixed; inset: 0; z-index: 0; background-size: cover; background-position: center; background-repeat: no-repeat; }
-.aa-bg-scrim { position: fixed; inset: 0; z-index: 0; background: linear-gradient(180deg, rgba(235,243,255,.32), rgba(228,238,253,.52)); }
-.aa-page > * { position: relative; z-index: 1; }
+.aa-page { padding-bottom: 60px; }
+/* 顶部横幅：蓝色雕塑整图,右侧显雕塑,左侧渐变 */
+.aa-hero { position: relative; overflow: hidden; height: 210px; display: flex; align-items: center; }
+.aa-hero-bg { position: absolute; inset: 0; background-size: cover; background-position: right center; }
+.aa-hero-mask { position: absolute; inset: 0; background: linear-gradient(100deg, rgba(23,72,183,.9) 0%, rgba(37,99,235,.56) 38%, rgba(47,125,246,.16) 64%, rgba(96,165,250,0) 88%); }
+.aa-hero-inner { position: relative; z-index: 2; }
+.aa-hero-title { margin: 0; font-size: 34px; font-weight: 850; letter-spacing: 2px; color: #fff; text-shadow: 0 3px 16px rgba(8,20,38,.28); }
+.aa-hero-sub { margin: 10px 0 0; font-size: 15px; color: #fff; opacity: .95; font-weight: 500; }
 .aa-container { padding-top: 24px; }
 .aa-grid { display: grid; grid-template-columns: 1fr 1.15fr; gap: 20px; align-items: start; }
 

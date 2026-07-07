@@ -1,9 +1,14 @@
 <template>
   <div class="msg-page xj-scene-study">
-    <!-- 全屏蓝色雕塑背景 + 轻遮罩(保证卡片可读) -->
-    <div class="msg-bg" :style="{ backgroundImage: `url(${heroBg})` }"></div>
-    <div class="msg-bg-scrim"></div>
-    <PageHero :bg="heroBg" tone="study" size="low" title="消息中心" subtitle="与同学、学长学姐的私信都在这里" />
+    <!-- 顶部横幅：蓝色雕塑背景(雕塑在右侧,左侧蓝色渐变衬标题) -->
+    <section class="msg-hero">
+      <div class="msg-hero-bg" :style="{ backgroundImage: `url(${heroBg})` }"></div>
+      <div class="msg-hero-mask"></div>
+      <div class="container msg-hero-inner">
+        <h1 class="msg-hero-title">消息中心</h1>
+        <p class="msg-hero-sub">与同学、学长学姐的私信都在这里</p>
+      </div>
+    </section>
 
     <div class="container msg-wrap">
       <XLoader v-if="loading" :size="52" text="加载中…" />
@@ -171,11 +176,14 @@ onMounted(loadConversations)
 </script>
 
 <style scoped>
-.msg-page { padding-bottom: 48px; position: relative; }
-/* 全屏蓝色雕塑背景固定铺满 + 轻遮罩 */
-.msg-bg { position: fixed; inset: 0; z-index: 0; background-size: cover; background-position: center; background-repeat: no-repeat; }
-.msg-bg-scrim { position: fixed; inset: 0; z-index: 0; background: linear-gradient(180deg, rgba(235,243,255,.32), rgba(228,238,253,.52)); }
-.msg-page > * { position: relative; z-index: 1; }
+.msg-page { padding-bottom: 48px; }
+/* 顶部横幅：蓝色雕塑整图,右侧显雕塑,左侧渐变 */
+.msg-hero { position: relative; overflow: hidden; height: 210px; display: flex; align-items: center; }
+.msg-hero-bg { position: absolute; inset: 0; background-size: cover; background-position: right center; }
+.msg-hero-mask { position: absolute; inset: 0; background: linear-gradient(100deg, rgba(23,72,183,.9) 0%, rgba(37,99,235,.56) 38%, rgba(47,125,246,.16) 64%, rgba(96,165,250,0) 88%); }
+.msg-hero-inner { position: relative; z-index: 2; }
+.msg-hero-title { margin: 0; font-size: 34px; font-weight: 850; letter-spacing: 2px; color: #fff; text-shadow: 0 3px 16px rgba(8,20,38,.28); }
+.msg-hero-sub { margin: 10px 0 0; font-size: 15px; color: #fff; opacity: .95; font-weight: 500; }
 .msg-wrap { padding-top: 24px; }
 .msg-grid { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 20px; align-items: start; }
 
