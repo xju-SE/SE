@@ -59,6 +59,39 @@
               <div class="tl-side-stage">阶段完成 <b>{{ stageProgress.done }}</b> / {{ stageProgress.total }}</div>
               <div class="tl-side-hint">如需调整发展方向，可在上方切换路线</div>
             </div>
+
+            <!-- 下一步建议：取第一个未完成节点 -->
+            <div class="xj-card study tl-side-card tl-next-card">
+              <div class="tl-side-sec-title"><img :src="icClock" class="ic" alt="" />下一步建议</div>
+              <template v-if="nextStepNode">
+                <div class="tl-next-head">
+                  <div class="tl-next-title">{{ nextStepNode.title }}</div>
+                  <span class="xj-badge" :class="importanceBadge(nextStepNode.importance)">{{ importanceLabel(nextStepNode.importance) }}</span>
+                </div>
+                <div class="tl-meta"><img :src="icCalendar" class="ic" alt="" />建议时间 · {{ nextStepNode.suggestedTime || '未设定' }}</div>
+                <div class="tl-actions">
+                  <button class="xj-btn study sm" @click="scrollToNode(nextStepIndex)">
+                    <img :src="icArrowRight" class="ic" alt="" />去完成
+                  </button>
+                </div>
+              </template>
+              <div v-else class="tl-next-empty">全部节点已完成 🎉</div>
+            </div>
+
+            <!-- 关键里程碑：已完成节点最多 3 个 -->
+            <div class="xj-card study tl-side-card tl-milestone-card">
+              <div class="tl-side-sec-title"><img :src="icStar" class="ic" alt="" />关键里程碑</div>
+              <ul v-if="milestoneNodes.length" class="tl-milestone-list">
+                <li v-for="m in milestoneNodes" :key="m.id" class="tl-milestone-item">
+                  <img :src="icSuccess" class="ic" alt="" />
+                  <div class="tl-milestone-text">
+                    <div class="tl-milestone-title">{{ m.title }}</div>
+                    <div class="tl-milestone-stage">{{ m.stageLabel }}</div>
+                  </div>
+                </li>
+              </ul>
+              <div v-else class="tl-milestone-empty">完成第一个节点即点亮里程碑</div>
+            </div>
           </aside>
 
           <!-- 右栏：进度条 + 时间线 -->
@@ -69,6 +102,20 @@
                 <b>{{ overall.doneNodes }} / {{ overall.totalNodes }} · {{ overall.percentage }}%</b>
               </div>
               <div class="tl-progress-track"><div class="tl-progress-fill" :style="{ width: overall.percentage + '%' }"></div></div>
+            </div>
+
+            <!-- 阶段进度：按 stageLabel 分组，当前进行中阶段高亮 -->
+            <div class="tl-stage-row">
+              <div
+                v-for="g in stageGroups" :key="g.label"
+                class="tl-stage-chip" :class="{ current: g.current }"
+              >
+                <div class="tl-stage-chip-top">
+                  <span class="tl-stage-chip-name">{{ g.label }}</span>
+                  <span class="tl-stage-chip-count">{{ g.done }}/{{ g.total }}</span>
+                </div>
+                <div class="tl-stage-chip-track"><div class="tl-stage-chip-fill" :style="{ width: g.percentage + '%' }"></div></div>
+              </div>
             </div>
 
             <el-timeline>
@@ -136,6 +183,8 @@ import icWarning from '../assets/icons/status/warning.svg'
 import icSuccess from '../assets/icons/status/success.svg'
 import icDocument from '../assets/icons/content/document.svg'
 import icArrowRight from '../assets/icons/actions/arrow-right.svg'
+import icClock from '../assets/icons/actions/clock.svg'
+import icStar from '../assets/icons/actions/star.svg'
 
 const demo = useDemoStore()
 
@@ -174,6 +223,35 @@ const stageProgress = computed(() => {
   let done = 0
   byStage.forEach((arr) => { if (arr.length && arr.every(Boolean)) done++ })
   return { done, total: byStage.size }
+})
+
+// 下一步建议卡：第一个未完成节点（保留其在 nodes 中的下标，供 scrollToNode 定位）
+const nextStepIndex = computed(() => nodes.value.findIndex((n) => n.progressStatus !== 'DONE'))
+const nextStepNode = computed(() => (nextStepIndex.value >= 0 ? nodes.value[nextStepIndex.value] : null))
+
+// 关键里程碑卡：已完成节点，最多展示 3 个
+const milestoneNodes = computed(() => nodes.value.filter((n) => n.progressStatus === 'DONE').slice(0, 3))
+
+// 阶段进度横条：按 stageLabel 分组统计完成度，含首个未完成节点的分组视为"当前进行中"并高亮
+const stageGroups = computed(() => {
+  const order: string[] = []
+  const map = new Map<string, { done: number; total: number }>()
+  nodes.value.forEach((n) => {
+    const key = n.stageLabel || '未分组'
+    if (!map.has(key)) { map.set(key, { done: 0, total: 0 }); order.push(key) }
+    const g = map.get(key)!
+    g.total++
+    if (n.progressStatus === 'DONE') g.done++
+  })
+  const currentLabel = nextStepNode.value ? (nextStepNode.value.stageLabel || '未分组') : ''
+  return order.map((label) => {
+    const g = map.get(label)!
+    return {
+      label, done: g.done, total: g.total,
+      percentage: g.total ? Math.round((g.done / g.total) * 100) : 0,
+      current: !!currentLabel && label === currentLabel,
+    }
+  })
 })
 
 // 时间轴圆点内嵌状态 icon（CSS ::after 背景图，v-bind 需绑定完整 url() 值，避免 url(var(...)) 兼容性问题）
@@ -331,7 +409,7 @@ onMounted(load)
 
 /* ---------- 两栏布局：左路线概览 + 右进度/时间线 ---------- */
 .tl-layout { display: grid; grid-template-columns: 270px 1fr; gap: 22px; align-items: start; }
-.tl-side { position: sticky; top: 86px; }
+.tl-side { position: sticky; top: 86px; display: flex; flex-direction: column; gap: 16px; }
 .tl-side-card { padding: 20px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; }
 .tl-side-label { font-size: 12px; color: var(--xj-subtle); font-weight: 650; }
 .tl-side-route { font-size: 17px; font-weight: 850; color: var(--xj-ink); margin-bottom: 8px; }
@@ -347,6 +425,33 @@ onMounted(load)
 .tl-side-stage b { color: var(--xj-blue); font-size: 15px; }
 .tl-side-hint { font-size: 11px; color: var(--xj-subtle); margin-top: 8px; line-height: 1.5; }
 .tl-main { min-width: 0; }
+
+/* ---------- 下一步建议 / 关键里程碑卡：左对齐排版，覆盖 tl-side-card 默认居中 ---------- */
+.tl-next-card, .tl-milestone-card { align-items: stretch; text-align: left; gap: 8px; }
+.tl-side-sec-title { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 800; color: var(--xj-ink); }
+.tl-side-sec-title .ic { width: 15px; height: 15px; flex: none; }
+
+.tl-next-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.tl-next-title { font-size: 13.5px; font-weight: 750; color: var(--xj-ink); line-height: 1.4; flex: 1; min-width: 0; }
+.tl-next-empty { font-size: 12.5px; color: var(--xj-muted); padding: 6px 0 2px; }
+
+.tl-milestone-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.tl-milestone-item { display: flex; align-items: flex-start; gap: 8px; }
+.tl-milestone-item .ic { width: 15px; height: 15px; flex: none; margin-top: 1px; }
+.tl-milestone-text { min-width: 0; }
+.tl-milestone-title { font-size: 13px; font-weight: 700; color: var(--xj-ink); line-height: 1.4; }
+.tl-milestone-stage { font-size: 11.5px; color: var(--xj-subtle); margin-top: 2px; }
+.tl-milestone-empty { font-size: 12.5px; color: var(--xj-muted); padding: 6px 0 2px; }
+
+/* ---------- 阶段进度横条 ---------- */
+.tl-stage-row { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 22px; }
+.tl-stage-chip { flex: 1 1 150px; min-width: 150px; padding: 10px 12px; background: #fff; border: 1px solid var(--xj-line); border-radius: 10px; transition: border-color var(--xj-fast) var(--xj-ease); }
+.tl-stage-chip.current { border-color: var(--xj-blue); box-shadow: 0 0 0 1px var(--xj-blue) inset; }
+.tl-stage-chip-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; margin-bottom: 7px; }
+.tl-stage-chip-name { font-weight: 700; color: var(--xj-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tl-stage-chip-count { color: var(--xj-muted); font-variant-numeric: tabular-nums; flex: none; }
+.tl-stage-chip-track { height: 6px; border-radius: 999px; background: var(--xj-soft); overflow: hidden; }
+.tl-stage-chip-fill { height: 100%; background: var(--xj-blue); border-radius: 999px; transition: width .3s var(--xj-ease); }
 
 .tl-progress { margin: 0 0 22px; }
 .tl-progress-head { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--xj-muted); margin-bottom: 8px; }

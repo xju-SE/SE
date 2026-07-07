@@ -242,7 +242,8 @@ function toggleDemo() {
 .pf-mask { position: absolute; inset: 0; }
 .pf-hero.study .pf-mask { background: linear-gradient(95deg, rgba(234,242,255,.95) 0%, rgba(219,234,255,.72) 28%, rgba(198,221,255,.22) 52%, rgba(255,255,255,0) 74%); }
 .pf-hero.life .pf-mask { background: linear-gradient(95deg, rgba(233,249,239,.95) 0%, rgba(213,242,224,.72) 28%, rgba(186,232,204,.22) 52%, rgba(255,255,255,0) 74%); }
-.pf-inner { position: relative; z-index: 2; display: flex; align-items: center; gap: 26px; padding-top: 34px; padding-bottom: 34px; }
+/* width:100% 必须显式给：pf-hero 是 flex 容器，.container 作为 flex 子项否则收缩居中，头像名字会跑到中间 */
+.pf-inner { position: relative; z-index: 2; display: flex; align-items: center; gap: 26px; padding-top: 34px; padding-bottom: 34px; width: 100%; }
 .pf-avatar { width: 128px; height: 128px; border-radius: 50%; border: 5px solid #fff; box-shadow: 0 10px 30px rgba(8,20,38,.18); object-fit: cover; flex: none; }
 .pf-id { flex: 1; min-width: 0; color: var(--xj-ink); }
 .pf-name-row { display: flex; align-items: center; gap: 10px; }

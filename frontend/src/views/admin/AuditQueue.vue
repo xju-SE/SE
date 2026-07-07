@@ -1,6 +1,6 @@
 <template>
   <div class="aq-page xj-scene-study">
-    <PageHero :bg="heroBg" tone="study" size="low" title="管理后台 · 审核队列" subtitle="统一处理知识候选与身份认证的终审" />
+    <PageHero :bg="heroBg" tone="study" size="mid" pos="right bottom" title="管理后台 · 审核队列" subtitle="统一处理知识候选与身份认证的终审" />
     <div class="container">
       <!-- 运营统计卡片行 -->
       <div class="stat-row">

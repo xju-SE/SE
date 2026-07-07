@@ -24,25 +24,25 @@ export function avatarFor(name: string, i = 0): string {
 
 export interface DemoPost {
   id: number; author: string; grade: string; tag: string; time: string; source: string
-  title: string; excerpt: string; images: string[]; a: number; b: number; avatarIdx: number
+  title: string; excerpt: string; images: string[]; a: number; b: number; avatarIdx: number; tags?: string[]
 }
 
 // 生活圈信息流（= 生活类知识条目 / 求助单）
 export const demoLifeFeed: DemoPost[] = [
-  { id: 1, author: '夏日微风', grade: '大二', tag: '校园分享', time: '2小时前', source: '图书馆', title: '图书馆新角落打卡｜今天的阳光刚刚好', excerpt: '发现图书馆五楼的玻璃阅览室座位绝了！阳光洒进来整个人都放松了～最近在啃数据结构，大家一起加油呀。', images: [IMGS[0], IMGS[1], IMGS[2]], a: 32, b: 8, avatarIdx: 1 },
-  { id: 2, author: '校学生会', grade: '官方', tag: '活动招募', time: '5小时前', source: '校园活动', title: '春日校园摄影大赛开始啦！', excerpt: '用镜头记录春天的校园，优秀作品将获得精美礼品～投稿时间 4.15 - 5.15，快来参加吧。', images: [IMGS[4]], a: 48, b: 12, avatarIdx: 2 },
-  { id: 3, author: '林同学', grade: '大三', tag: '生活攻略', time: '昨天 20:30', source: '生活FAQ', title: '新生必看｜校园卡、快递、校园网办理全流程', excerpt: '整理了报到后最需要搞定的几件事：校园卡激活、三个快递点位置、校园网自助注册入口，避免踩坑。', images: [], a: 25, b: 6, avatarIdx: 3 },
-  { id: 4, author: '小城漫游记', grade: '大二', tag: '经验分享', time: '昨天 18:45', source: '市区', title: '周末去哪儿｜发现这座城市的慢时光', excerpt: '整理了几个适合周末放松的好去处，公交路线和人均花费都写清楚了，收藏起来慢慢逛。', images: [IMGS[0], IMGS[5]], a: 41, b: 9, avatarIdx: 4 },
+  { id: 1, author: '夏日微风', grade: '大二', tag: '校园分享', time: '2小时前', source: '图书馆', title: '图书馆新角落打卡｜今天的阳光刚刚好', excerpt: '发现图书馆五楼的玻璃阅览室座位绝了！阳光洒进来整个人都放松了～最近在啃数据结构，大家一起加油呀。', images: [IMGS[0], IMGS[1], IMGS[2]], a: 32, b: 8, avatarIdx: 1, tags: ['校园分享', '图书馆', '打卡'] },
+  { id: 2, author: '校学生会', grade: '官方', tag: '活动招募', time: '5小时前', source: '校园活动', title: '春日校园摄影大赛开始啦！', excerpt: '用镜头记录春天的校园，优秀作品将获得精美礼品～投稿时间 4.15 - 5.15，快来参加吧。', images: [IMGS[4]], a: 48, b: 12, avatarIdx: 2, tags: ['活动招募', '摄影大赛'] },
+  { id: 3, author: '林同学', grade: '大三', tag: '生活攻略', time: '昨天 20:30', source: '生活FAQ', title: '新生必看｜校园卡、快递、校园网办理全流程', excerpt: '整理了报到后最需要搞定的几件事：校园卡激活、三个快递点位置、校园网自助注册入口，避免踩坑。', images: [], a: 25, b: 6, avatarIdx: 3, tags: ['新生攻略', '校园卡', '避坑'] },
+  { id: 4, author: '小城漫游记', grade: '大二', tag: '经验分享', time: '昨天 18:45', source: '市区', title: '周末去哪儿｜发现这座城市的慢时光', excerpt: '整理了几个适合周末放松的好去处，公交路线和人均花费都写清楚了，收藏起来慢慢逛。', images: [IMGS[0], IMGS[5]], a: 41, b: 9, avatarIdx: 4, tags: ['City Walk', '周末', '慢生活'] },
 ]
 
 // 学业圈信息流（= 学业知识条目 / 求助单 / 机会）
 export const demoStudyFeed: DemoPost[] = [
-  { id: 11, author: '张同学', grade: '大四', tag: '课程资料', time: '2小时前', source: '知识库', title: '数据结构（C语言版）期末复习资料（含课后习题）', excerpt: '整理了数据结构全部章节的重点知识点、课后习题详解和历年期末真题，希望对大家复习有帮助～适用范围：计科大二。', images: [IMGS[3], IMGS[4], IMGS[5]], a: 98, b: 23, avatarIdx: 5 },
-  { id: 12, author: '小雨学姐', grade: '研究生', tag: '考研经验', time: '5小时前', source: '知识库', title: '机器学习导论 笔记整理（持续更新中）', excerpt: '吴恩达课程笔记整理，包含线性回归、逻辑回归、神经网络等核心内容，附公式推导和个人理解，欢迎交流～', images: [IMGS[1], IMGS[2]], a: 76, b: 18, avatarIdx: 6 },
-  { id: 13, author: '求助-李同学', grade: '大三', tag: '结构化求助', time: '昨天 16:20', source: '求助单·进行中', title: '想转专业到计科，课程衔接和考试要求有学长了解吗？', excerpt: '目前大二，GPA 3.6，想转到计算机科学与技术。请问转专业的考核科目、时间节点和需要提前补的课有哪些？', images: [], a: 3, b: 12, avatarIdx: 7 },
-  { id: 14, author: '数学建模小土豆', grade: '大三', tag: '竞赛经验', time: '昨天 10:11', source: '知识库', title: '2024 美赛 M 奖经验分享与备赛建议', excerpt: '从选题思路、建模方法到论文写作，分享我们的参赛经验和避坑指南，希望帮到今年参赛的同学。', images: [IMGS[2], IMGS[3]], a: 54, b: 15, avatarIdx: 0 },
-  { id: 15, author: '陈学长', grade: '大四', tag: '课程资料', time: '前天 14:30', source: '知识库', title: '操作系统进程管理详解（含思维导图）', excerpt: '整理了进程/线程、调度算法、死锁、同步互斥的核心考点与高频题型，附思维导图与典型例题解析。', images: [IMGS[5]], a: 63, b: 11, avatarIdx: 2 },
-  { id: 16, author: '算法小王子', grade: '大三', tag: '课程资料', time: '3天前', source: '知识库', title: 'C 语言常用算法代码模板合集', excerpt: '排序、查找、链表、树、图的可直接套用代码模板，均已在 VS Code 与 Dev-C++ 中测试通过。', images: [IMGS[1]], a: 87, b: 19, avatarIdx: 4 },
+  { id: 11, author: '张同学', grade: '大四', tag: '课程资料', time: '2小时前', source: '知识库', title: '数据结构（C语言版）期末复习资料（含课后习题）', excerpt: '整理了数据结构全部章节的重点知识点、课后习题详解和历年期末真题，希望对大家复习有帮助～适用范围：计科大二。', images: [IMGS[3], IMGS[4], IMGS[5]], a: 98, b: 23, avatarIdx: 5, tags: ['数据结构', 'C语言', '期末复习'] },
+  { id: 12, author: '小雨学姐', grade: '研究生', tag: '考研经验', time: '5小时前', source: '知识库', title: '机器学习导论 笔记整理（持续更新中）', excerpt: '吴恩达课程笔记整理，包含线性回归、逻辑回归、神经网络等核心内容，附公式推导和个人理解，欢迎交流～', images: [IMGS[1], IMGS[2]], a: 76, b: 18, avatarIdx: 6, tags: ['机器学习', '吴恩达', '笔记'] },
+  { id: 13, author: '求助-李同学', grade: '大三', tag: '结构化求助', time: '昨天 16:20', source: '求助单·进行中', title: '想转专业到计科，课程衔接和考试要求有学长了解吗？', excerpt: '目前大二，GPA 3.6，想转到计算机科学与技术。请问转专业的考核科目、时间节点和需要提前补的课有哪些？', images: [], a: 3, b: 12, avatarIdx: 7, tags: ['转专业', '计科', '课程衔接'] },
+  { id: 14, author: '数学建模小土豆', grade: '大三', tag: '竞赛经验', time: '昨天 10:11', source: '知识库', title: '2024 美赛 M 奖经验分享与备赛建议', excerpt: '从选题思路、建模方法到论文写作，分享我们的参赛经验和避坑指南，希望帮到今年参赛的同学。', images: [IMGS[2], IMGS[3]], a: 54, b: 15, avatarIdx: 0, tags: ['数学建模', '美赛', '备赛'] },
+  { id: 15, author: '陈学长', grade: '大四', tag: '课程资料', time: '前天 14:30', source: '知识库', title: '操作系统进程管理详解（含思维导图）', excerpt: '整理了进程/线程、调度算法、死锁、同步互斥的核心考点与高频题型，附思维导图与典型例题解析。', images: [IMGS[5]], a: 63, b: 11, avatarIdx: 2, tags: ['操作系统', '思维导图', '考点'] },
+  { id: 16, author: '算法小王子', grade: '大三', tag: '课程资料', time: '3天前', source: '知识库', title: 'C 语言常用算法代码模板合集', excerpt: '排序、查找、链表、树、图的可直接套用代码模板，均已在 VS Code 与 Dev-C++ 中测试通过。', images: [IMGS[1]], a: 87, b: 19, avatarIdx: 4, tags: ['算法模板', 'C语言', '刷题'] },
 ]
 
 // 右栏：热门（生活=活动机会 / 学业=资源机会），均映射后端 opportunity

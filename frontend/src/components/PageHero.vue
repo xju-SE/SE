@@ -1,7 +1,7 @@
 <template>
   <!-- 通用英雄横幅：校园背景图 + 品牌色渐变从左淡出（对照参考图所有页面的页头模板） -->
-  <section class="page-hero" :class="[tone, size, { light }]">
-    <div class="ph-bg" :style="{ backgroundImage: `url(${bg})` }"></div>
+  <section class="page-hero" :class="[tone, size, { light, full: fullImage && !collapsed, collapsed: fullImage && collapsed }]" :style="fullImage && !collapsed ? { height: `min(calc(100vw / ${ratio}), 62vh)` } : undefined">
+    <div class="ph-bg" :style="{ backgroundImage: `url(${bg})`, backgroundPosition: pos }"></div>
     <div class="ph-mask"></div>
     <div class="ph-inner container">
       <div v-if="crumbs && crumbs.length" class="ph-crumbs">
@@ -27,14 +27,21 @@ withDefaults(defineProps<{
   subtitle?: string
   crumbs?: string[]
   light?: boolean
-}>(), { tone: 'life', size: 'mid', title: '', subtitle: '', crumbs: () => [], light: false })
+  pos?: string           // 背景定位（如 'right bottom' 露出角落雕塑 / 'center top' 取图上部）
+  fullImage?: boolean    // 整图展示模式：初始高度=视宽/ratio（图完整可见），配合 collapsed 折叠回 size 档
+  collapsed?: boolean
+  ratio?: number         // 背景图宽高比（fullImage 用），默认 3:1 横幅带
+}>(), { tone: 'life', size: 'mid', title: '', subtitle: '', crumbs: () => [], light: false, pos: 'center', fullImage: false, collapsed: false, ratio: 3 })
 </script>
 
 <style scoped>
-.page-hero { position: relative; overflow: hidden; display: flex; align-items: center; color: #fff; }
+.page-hero { position: relative; overflow: hidden; display: flex; align-items: center; color: #fff; transition: height .5s var(--xj-ease, cubic-bezier(.22,.8,.2,1)), min-height .5s var(--xj-ease, cubic-bezier(.22,.8,.2,1)); }
 .page-hero.tall { min-height: 268px; }
 .page-hero.mid { min-height: 190px; }
 .page-hero.low { min-height: 150px; }
+/* fullImage 整图展示：高度由内联 style 按图比例算；折叠后回落到 size 档高度 */
+.page-hero.full .ph-bg { background-size: contain; background-repeat: no-repeat; background-color: #EDf6F0; }
+.page-hero.collapsed { min-height: 268px; }
 .ph-bg { position: absolute; inset: 0; background-size: cover; background-position: center; }
 .ph-mask { position: absolute; inset: 0; }
 .page-hero.life .ph-mask { background: linear-gradient(95deg, rgba(16,140,74,.88) 0%, rgba(34,197,94,.52) 30%, rgba(4,191,165,.14) 54%, rgba(255,255,255,0) 78%); }

@@ -172,7 +172,7 @@ const XLoaderInline = () => h('span', { class: 'lc-spinner' })
 
 /* 左侧介绍 */
 .stage-left { position: absolute; inset: 0; display: flex; align-items: center; padding-left: 8%; }
-.intro-block { max-width: 400px; opacity: 0; transform: translateY(16px); transition: opacity .5s ease .35s, transform .5s var(--xj-ease) .35s; }
+.intro-block { max-width: 400px; margin-top: 22vh; opacity: 0; transform: translateY(16px); transition: opacity .5s ease .35s, transform .5s var(--xj-ease) .35s; }
 .started .intro-block { opacity: 1; transform: translateY(0); }
 .intro-title { font-size: 46px; line-height: 1.16; font-weight: 850; color: var(--xj-ink); margin: 0; letter-spacing: 1px; }
 .intro-title .grad { background: linear-gradient(100deg, #22C55E, #04BFA5 45%, #2563EB); -webkit-background-clip: text; background-clip: text; color: transparent; }
@@ -182,11 +182,13 @@ const XLoaderInline = () => h('span', { class: 'lc-spinner' })
 /* 会移动的 Logo */
 .brand-logo { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 30;
   transition: all .65s cubic-bezier(.22,1,.36,1); display: flex; flex-direction: column; align-items: center; gap: 20px; }
-/* 入口（未开始）：巨幅品牌 Logo，对照 P1 关键帧占屏约一半宽；宽度驱动 + 视口上限防溢出 */
-.brand-logo.clickable :deep(.logo-full) { width: min(1240px, 86vw); height: auto !important; filter: drop-shadow(0 18px 46px rgba(8,20,38,.12)); }
+/* 入口（未开始 P1）：品牌 Logo 占屏约 43vw（用户定稿：巨幅的 1/2）；宽度驱动 + 上限防溢出 */
+.brand-logo.clickable :deep(.logo-full) { width: min(620px, 43vw); height: auto !important; filter: drop-shadow(0 18px 46px rgba(8,20,38,.12)); }
+/* 终态（P6）：左上 Logo 放大 5 倍（62→310 高），宽度上限防压登录卡 */
+.started .brand-logo :deep(.logo-full) { width: min(755px, 42vw); height: auto !important; }
 .brand-logo.clickable { cursor: pointer; }
 .brand-logo.clickable:hover { transform: translate(-50%, -50%) scale(1.03); filter: drop-shadow(0 12px 30px rgba(8,20,38,.14)); }
-.started .brand-logo { top: 96px; left: 8%; transform: translate(0, 0); }
+.started .brand-logo { top: 48px; left: 8%; transform: translate(0, 0); }
 .enter-hint { font-size: 12px; color: var(--xj-subtle); letter-spacing: 2px; animation: breathe 2.2s ease-in-out infinite; }
 @keyframes breathe { 0%,100% { opacity: .4; } 50% { opacity: .9; } }
 

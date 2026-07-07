@@ -1,8 +1,10 @@
 <template>
   <!-- ===== 双圈首页 · 总入口（对照 进入首页.png：上方分屏 banner + 下方三卡片） ===== -->
   <div v-if="!sceneChosen" class="entry">
-    <section class="entry-hero">
-      <div class="eh-panel life" :style="{ backgroundImage: `url(${gateLife})` }" @click="enter('life')">
+    <!-- 斜向分屏（对照 进入首页.png 的斜分割线），hover 时斜线整体平移扩展该侧 -->
+    <section class="entry-hero" :class="{ hovLife: gateHov === 'life', hovStudy: gateHov === 'study' }">
+      <div class="eh-panel life" :style="{ backgroundImage: `url(${gateLife})` }"
+        @click="enter('life')" @mouseenter="gateHov = 'life'" @mouseleave="gateHov = ''">
         <div class="ehp-mask"></div>
         <div class="ehp-body">
           <h2 class="ehp-title">生活圈</h2>
@@ -10,7 +12,8 @@
           <button class="ehp-btn life">进入生活圈 <img :src="icArrow" alt="" /></button>
         </div>
       </div>
-      <div class="eh-panel study" :style="{ backgroundImage: `url(${gateStudy})` }" @click="enter('study')">
+      <div class="eh-panel study" :style="{ backgroundImage: `url(${gateStudy})` }"
+        @click="enter('study')" @mouseenter="gateHov = 'study'" @mouseleave="gateHov = ''">
         <div class="ehp-mask"></div>
         <div class="ehp-body">
           <h2 class="ehp-title">学业圈</h2>
@@ -151,12 +154,20 @@
                 </div>
                 <button class="fc-more" type="button"><img :src="icMore" alt="更多" /></button>
               </div>
-              <h3 class="fc-title" @click="openPost(p)">{{ p.title }}</h3>
-              <p class="fc-excerpt">{{ p.excerpt }}</p>
-              <div v-if="p.images.length" class="fc-media" :class="'n' + Math.min(p.images.length, 3)">
-                <div class="m-cell" v-for="(img, i) in p.images.slice(0, 3)" :key="i">
-                  <img :src="img" alt="" />
-                  <div v-if="i === 2 && p.images.length > 3" class="m-more">+{{ p.images.length - 3 }}</div>
+              <!-- 左文右图布局（对照 学业圈首页.png：文字左 55%，右侧小缩略图列） -->
+              <div class="fc-flex">
+                <div class="fc-main">
+                  <h3 class="fc-title" @click="openPost(p)">{{ p.title }}</h3>
+                  <p class="fc-excerpt">{{ p.excerpt }}</p>
+                  <div class="fc-tags">
+                    <span class="fc-tag chip" v-for="tg in chipsOf(p)" :key="tg">{{ tg }}</span>
+                  </div>
+                </div>
+                <div v-if="p.images.length" class="fc-side-media">
+                  <div class="sm-cell" v-for="(img, i) in p.images.slice(0, 3)" :key="i">
+                    <img :src="img" alt="" />
+                    <div v-if="i === 2 && p.images.length > 3" class="m-more">+{{ p.images.length - 3 }}</div>
+                  </div>
                 </div>
               </div>
               <div class="fc-actions">
@@ -184,6 +195,7 @@
             <div class="reco-item" v-for="(r, i) in reco" :key="i">
               <img class="r-avatar" :src="avatarFor(r.name, r.avatarIdx)" alt="" />
               <div class="r-main"><div class="r-name">{{ r.name }}</div><div class="r-sub">{{ r.sub }}</div></div>
+              <button class="r-join" :class="isLife ? 'life' : 'study'" @click="$router.push('/opportunities')">＋ 加入</button>
             </div>
           </div>
 
@@ -246,6 +258,7 @@ const demo = useDemoStore()
 const auth = useAuthStore()
 
 const sceneChosen = computed(() => !!route.query.scene)
+const gateHov = ref('')
 const isLife = computed(() => route.query.scene !== 'study')
 function enter(s: 'life' | 'study') {
   router.push({ path: '/dashboard', query: { scene: s } })
@@ -323,6 +336,8 @@ watch(() => route.query.scene, () => { activeTab.value = 0; loadAll() })
 
 // 浏览量：真实数据用后端 viewCount，演示兜底用互动量派生（纯展示，不臆造接口）
 const viewsOf = (p: any) => p.views ?? p.a * 7 + p.b
+// 标签 chips：演示数据的 tags 优先，否则由分类 tag 派生（对照参考图 feed 卡标签行）
+const chipsOf = (p: any) => (p.tags && p.tags.length ? p.tags : [p.tag]).slice(0, 3)
 </script>
 
 <style scoped>
@@ -344,19 +359,55 @@ const viewsOf = (p: any) => p.views ?? p.a * 7 + p.b
 /* 连续进度勾选：CSS 描边对勾（替换手绘 svg），生活/学业圈各自品牌色 */
 .streak-dot.done::after { content: ""; width: 6px; height: 11px; border: solid #fff; border-width: 0 3px 3px 0; transform: rotate(45deg); margin-top: -2px; }
 
-/* ===== 双圈首页 · 总入口（对照 进入首页.png） ===== */
+/* ===== 信息流卡：左文右图（对照 学业圈首页.png） ===== */
+.fc-flex { display: flex; gap: 18px; align-items: flex-start; }
+.fc-main { flex: 1; min-width: 0; }
+.fc-side-media { flex: none; display: flex; gap: 8px; padding-top: 4px; }
+.sm-cell { position: relative; width: 96px; height: 96px; border-radius: 10px; overflow: hidden; background: var(--xj-soft); }
+.sm-cell img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sm-cell .m-more { position: absolute; inset: 0; background: rgba(8,20,38,.5); color: #fff; display: grid; place-items: center; font-size: 17px; font-weight: 800; }
+/* 标签 chips：浅品牌底 */
+.fc-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 11px; }
+.fc-tag.chip { height: 24px; padding: 0 10px; display: inline-flex; align-items: center; border-radius: 7px; font-size: 11.5px; font-weight: 650; border: 0; }
+.xj-scene-study .fc-tag.chip { background: #EAF2FF; color: var(--xj-blue-deep); }
+.xj-scene-life .fc-tag.chip { background: #E9F9EF; color: var(--xj-green-deep); }
+@media (max-width: 720px) { .fc-flex { flex-direction: column; } .fc-side-media { padding-top: 0; } }
+
+/* 快捷入口：大彩色图标块（对照参考图 2×2 彩色卡） */
+.quick-item { height: 88px; background: #fff; }
+.quick-item .qi-icon { width: 42px; height: 42px; padding: 9px; border-radius: 12px; box-sizing: border-box; }
+.quick-item:nth-child(1) .qi-icon { background: #EAF2FF; }
+.quick-item:nth-child(2) .qi-icon { background: #E9F9EF; }
+.quick-item:nth-child(3) .qi-icon { background: #F1ECFF; }
+.quick-item:nth-child(4) .qi-icon { background: #FFF2DC; }
+
+/* 推荐小组/社团 "+加入" 按钮（对照参考图右栏） */
+.r-join { flex: none; height: 28px; padding: 0 12px; border-radius: 999px; font-size: 12px; font-weight: 750; cursor: pointer; border: 1px solid; background: #fff; transition: all var(--xj-fast); }
+.r-join.study { color: var(--xj-blue-deep); border-color: #C9DDFF; }
+.r-join.study:hover { background: #EAF2FF; }
+.r-join.life { color: var(--xj-green-deep); border-color: #BFE8CB; }
+.r-join.life:hover { background: #E9F9EF; }
+
+/* ===== 双圈首页 · 总入口（对照 进入首页.png：斜向分屏 + 背景取图上部） ===== */
 .entry { padding-bottom: 40px; }
-/* 上方分屏 banner（非全屏），直分割线 + 底部圆角 */
-.entry-hero { display: flex; height: clamp(400px, 52vh, 560px); overflow: hidden; }
-.eh-panel { position: relative; flex: 1; background-size: cover; background-position: center; cursor: pointer; display: flex; align-items: center;
-  transition: flex .5s cubic-bezier(.22,.8,.2,1); }
-.entry-hero:hover .eh-panel { flex: .9; }
-.entry-hero .eh-panel:hover { flex: 1.22; }
+.entry-hero { position: relative; height: clamp(400px, 52vh, 560px); overflow: hidden;
+  /* 斜分割线两端位置（顶部/底部 x%），hover 时整体平移扩展该侧 */
+  --st: 55.5%; --sb: 45.5%; }
+.entry-hero.hovLife { --st: 63.5%; --sb: 53.5%; }
+.entry-hero.hovStudy { --st: 47.5%; --sb: 37.5%; }
+.eh-panel { position: absolute; inset: 0; background-size: cover; background-position: center top; cursor: pointer; display: flex; align-items: center;
+  transition: clip-path .55s cubic-bezier(.22,.8,.2,1); }
+.eh-panel.life { clip-path: polygon(0 0, var(--st) 0, var(--sb) 100%, 0 100%); }
+.eh-panel.study { clip-path: polygon(calc(var(--st) - .35%) 0, 100% 0, 100% 100%, calc(var(--sb) - .35%) 100%); }
 .ehp-mask { position: absolute; inset: 0; transition: opacity .4s; }
 .eh-panel.life .ehp-mask { background: linear-gradient(120deg, rgba(12,110,60,.34), rgba(16,140,74,.16) 46%, rgba(16,140,74,.05)); }
-.eh-panel.study .ehp-mask { background: linear-gradient(120deg, rgba(18,52,130,.36), rgba(23,72,183,.17) 46%, rgba(23,72,183,.05)); }
+.eh-panel.study .ehp-mask { background: linear-gradient(300deg, rgba(18,52,130,.1), rgba(23,72,183,.2) 52%, rgba(18,52,130,.4)); }
 .eh-panel:hover .ehp-mask { opacity: .8; }
-.ehp-body { position: relative; z-index: 2; padding: 0 clamp(30px, 6%, 92px); color: #fff; }
+.ehp-body { position: relative; z-index: 2; padding: 0; color: #fff; margin-left: 9%; transition: margin .55s cubic-bezier(.22,.8,.2,1); }
+/* 学业圈内容放在右半区中央；hover 生活圈时右移避开扩张的斜线 */
+.eh-panel.study .ehp-body { margin-left: 64%; }
+.entry-hero.hovLife .eh-panel.study .ehp-body { margin-left: 71%; }
+.entry-hero.hovStudy .eh-panel.life .ehp-body { margin-left: 6%; }
 .ehp-title { margin: 0; font-size: clamp(40px, 4.4vw, 62px); font-weight: 850; letter-spacing: 8px; text-shadow: 0 4px 30px rgba(8,20,38,.4); }
 .ehp-sub { margin: 14px 0 26px; font-size: clamp(15px, 1.4vw, 19px); font-weight: 500; text-shadow: 0 2px 14px rgba(8,20,38,.35); }
 .ehp-btn { height: 50px; padding: 0 28px; border: 0; border-radius: 12px; background: #fff; font-size: 15px; font-weight: 800; cursor: pointer;
@@ -419,9 +470,10 @@ const viewsOf = (p: any) => p.views ?? p.a * 7 + p.b
 .en-time { font-size: 11px; color: var(--xj-subtle); flex: none; }
 
 @media (max-width: 900px) {
-  .entry-hero { flex-direction: column; height: auto; }
-  .eh-panel { min-height: 240px; }
-  .entry-hero:hover .eh-panel, .entry-hero .eh-panel:hover { flex: 1; }
+  /* 窄屏退化为上下堆叠（clip-path 改横向切分） */
+  .entry-hero { height: auto; min-height: 480px; }
+  .eh-panel { position: relative; min-height: 240px; clip-path: none !important; }
+  .eh-panel.study .ehp-body, .entry-hero.hovLife .eh-panel.study .ehp-body { margin-left: 9%; }
   .entry-cards { grid-template-columns: 1fr; margin-top: 18px; }
 }
 </style>

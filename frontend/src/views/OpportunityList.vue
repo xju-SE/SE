@@ -1,6 +1,6 @@
 <template>
   <div class="opp-page xj-scene-study">
-    <PageHero :bg="heroBg" tone="study" size="mid" title="机会与组队" subtitle="竞赛、大创、实习与讲座机会，找到同行的伙伴" />
+    <PageHero :bg="heroBg" tone="study" size="tall" pos="right bottom" title="机会与组队" subtitle="竞赛、大创、实习与讲座机会，找到同行的伙伴" />
     <div class="container">
       <div class="xj-tabs opp-main-tabs">
         <button class="xj-tab study" :class="{ active: mainTab === 'opportunities' }" @click="switchMain('opportunities')">机会列表</button>
