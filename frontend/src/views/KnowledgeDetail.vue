@@ -12,10 +12,10 @@
           <article class="xj-card study kd-article">
             <!-- 作者行 -->
             <header class="kd-author">
-              <img class="xj-avatar" :src="avatarFor(entry.authorName || '知识贡献者', entry.avatarIdx ?? entry.id)" alt="" />
+              <img class="xj-avatar" :src="avatarFor(entry.authorName || '知识贡献者', entry.avatarIdx ?? entry.id)" alt="" style="cursor:pointer" @click="openAuthor" />
               <div class="kd-author-main">
                 <div class="kd-author-name">
-                  {{ entry.authorName || '知识贡献者' }}
+                  <span style="cursor:pointer" @click="openAuthor">{{ entry.authorName || '知识贡献者' }}</span>
                   <span class="xj-badge" :class="categoryBadge(entry.category)">{{ categoryLabel(entry.category) }}</span>
                   <span class="xj-badge success kd-role"><img :src="icVerified" class="ic xs" />知识贡献者</span>
                 </div>
@@ -106,15 +106,18 @@
           <div class="xj-card xj-user-card kd-usercard">
             <div class="kd-usercard-cover"></div>
             <div class="kd-usercard-body">
-              <img class="xj-avatar" :src="avatarFor(entry.authorName || '知识贡献者', entry.avatarIdx ?? entry.id)" alt="" />
-              <div class="xj-user-name">{{ entry.authorName || '知识贡献者' }}</div>
+              <img class="xj-avatar" :src="avatarFor(entry.authorName || '知识贡献者', entry.avatarIdx ?? entry.id)" alt="" style="cursor:pointer" @click="openAuthor" />
+              <div class="xj-user-name" style="cursor:pointer" @click="openAuthor">{{ entry.authorName || '知识贡献者' }}</div>
               <div class="xj-user-sub">知识贡献者 · {{ entry.applicableScope || '全校' }}</div>
               <div class="xj-user-stats">
                 <div><img :src="icDoc" class="us-ic" /><b>{{ demoMeta?.contribKnow ?? 0 }}</b><span>知识</span></div>
                 <div><img :src="icVerified" class="us-ic" /><b>{{ demoMeta?.contribAdopt ?? 0 }}</b><span>被采纳</span></div>
                 <div><img :src="icHeart" class="us-ic" /><b>{{ demoMeta?.contribUseful ?? 0 }}</b><span>有用</span></div>
               </div>
-              <button class="xj-btn study kd-follow" type="button"><img :src="icUserAdd" class="ic" /> 关注贡献者</button>
+              <div class="kd-follow-row">
+                <button class="xj-btn kd-follow" :class="following ? 'secondary' : 'study'" type="button" @click="toggleFollow"><img :src="icUserAdd" class="ic" /> {{ following ? '已关注' : '关注贡献者' }}</button>
+                <button class="xj-btn secondary kd-follow" type="button" @click="openAuthor">查看主页</button>
+              </div>
             </div>
           </div>
 
@@ -177,8 +180,8 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useDemoStore, loadOr } from '../store/demo'
-import { avatarFor, demoKnowledgeEntries, demoPostById } from '../mock/demoData'
-import { knowledgeApi } from '../api'
+import { avatarFor, demoKnowledgeEntries, demoPostById, demoPersonByName } from '../mock/demoData'
+import { knowledgeApi, followApi } from '../api'
 import XLoader from '../components/XLoader.vue'
 import PageHero from '../components/PageHero.vue'
 import emptyImg from '../assets/states/empty.svg'
@@ -207,6 +210,29 @@ const route = useRoute()
 const router = useRouter()
 const demo = useDemoStore()
 const id = Number(route.params.id)
+
+// 作者主页跳转目标：真实态用 authorId，演示态用作者名映射的演示人物 id
+function authorTargetId() {
+  const e: any = entry.value
+  return e?.authorId || demoPersonByName(e?.authorName || '知识贡献者').id
+}
+function openAuthor() {
+  router.push('/u/' + authorTargetId())
+}
+// 关注贡献者（演示+真实双模式）
+const following = ref(false)
+async function toggleFollow() {
+  const targetId = authorTargetId()
+  if (demo.enabled) {
+    following.value = !following.value
+    ElMessage.success(following.value ? '已关注（演示模式）' : '已取消关注（演示模式）')
+    return
+  }
+  try {
+    if (following.value) { await followApi.unfollow(targetId); following.value = false; ElMessage.success('已取消关注') }
+    else { await followApi.follow(targetId); following.value = true; ElMessage.success('已关注') }
+  } catch { /* 拦截器提示 */ }
+}
 
 // 分类取值对齐后端 KnowledgeCategory 枚举（LIFE/COURSE/COMPETITION/POSTGRAD_EMPLOY/NAV）
 const CATEGORY_LABELS: Record<string, string> = {
@@ -382,7 +408,8 @@ onMounted(load)
 .kd-usercard-cover { height: 56px; background: linear-gradient(120deg, #DCEBFF 0%, #EAF2FF 55%, #F5F9FF 100%); }
 .kd-usercard-body { padding: 0 16px 20px; text-align: center; margin-top: -28px; }
 .kd-usercard-body .xj-avatar { position: relative; z-index: 1; }
-.kd-follow { width: 100%; margin-top: 2px; }
+.kd-follow-row { display: flex; gap: 8px; margin-top: 2px; }
+.kd-follow { flex: 1; }
 .kd-side-empty { font-size: 12px; color: var(--xj-subtle); padding: 4px 2px; }
 .us-ic { width: 15px; height: 15px; display: block; margin: 0 auto 3px; }
 

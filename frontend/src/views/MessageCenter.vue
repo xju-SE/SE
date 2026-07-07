@@ -1,5 +1,8 @@
 <template>
   <div class="msg-page xj-scene-study">
+    <!-- 全屏蓝色雕塑背景 + 轻遮罩(保证卡片可读) -->
+    <div class="msg-bg" :style="{ backgroundImage: `url(${heroBg})` }"></div>
+    <div class="msg-bg-scrim"></div>
     <PageHero :bg="heroBg" tone="study" size="low" title="消息中心" subtitle="与同学、学长学姐的私信都在这里" />
 
     <div class="container msg-wrap">
@@ -168,7 +171,11 @@ onMounted(loadConversations)
 </script>
 
 <style scoped>
-.msg-page { padding-bottom: 48px; }
+.msg-page { padding-bottom: 48px; position: relative; }
+/* 全屏蓝色雕塑背景固定铺满 + 轻遮罩 */
+.msg-bg { position: fixed; inset: 0; z-index: 0; background-size: cover; background-position: center; background-repeat: no-repeat; }
+.msg-bg-scrim { position: fixed; inset: 0; z-index: 0; background: linear-gradient(180deg, rgba(235,243,255,.32), rgba(228,238,253,.52)); }
+.msg-page > * { position: relative; z-index: 1; }
 .msg-wrap { padding-top: 24px; }
 .msg-grid { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 20px; align-items: start; }
 

@@ -1,5 +1,8 @@
 <template>
   <div class="aa-page xj-scene-study">
+    <!-- 全屏蓝色雕塑背景 + 轻遮罩 -->
+    <div class="aa-bg" :style="{ backgroundImage: `url(${heroBg})` }"></div>
+    <div class="aa-bg-scrim"></div>
     <PageHero :bg="heroBg" tone="study" size="mid" title="身份认证" subtitle="完成身份认证后，可解锁校友互助、经验分享等更多能力" />
 
     <div class="container aa-container">
@@ -308,7 +311,11 @@ onMounted(load)
 </script>
 
 <style scoped>
-.aa-page { padding-bottom: 60px; }
+.aa-page { padding-bottom: 60px; position: relative; }
+/* 全屏蓝色雕塑背景固定铺满 + 轻遮罩 */
+.aa-bg { position: fixed; inset: 0; z-index: 0; background-size: cover; background-position: center; background-repeat: no-repeat; }
+.aa-bg-scrim { position: fixed; inset: 0; z-index: 0; background: linear-gradient(180deg, rgba(235,243,255,.32), rgba(228,238,253,.52)); }
+.aa-page > * { position: relative; z-index: 1; }
 .aa-container { padding-top: 24px; }
 .aa-grid { display: grid; grid-template-columns: 1fr 1.15fr; gap: 20px; align-items: start; }
 

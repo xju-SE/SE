@@ -47,10 +47,10 @@
 
               <article v-for="ans in answers" :key="ans.id" class="answer-card" :class="{ adopted: ans.isAdopted === 1 }">
                 <div class="ans-head">
-                  <img class="xj-avatar" :src="avatarFor(ans.responderName, ans.id)" alt="" />
+                  <img class="xj-avatar" :src="avatarFor(ans.responderName, ans.id)" alt="" style="cursor:pointer" @click="openUser(ans.responderName, ans.responderId)" />
                   <div class="ans-author">
                     <div class="a-name">
-                      {{ ans.responderName || '匿名回答者' }}
+                      <span style="cursor:pointer" @click="openUser(ans.responderName, ans.responderId)">{{ ans.responderName || '匿名回答者' }}</span>
                       <span v-if="ans.responderRole" class="xj-badge" :class="roleBadge(ans.responderRole)">{{ roleLabel(ans.responderRole) }}</span>
                       <span v-if="ans.isAdopted === 1" class="xj-badge success adopt-badge"><img :src="icSuccess" class="ic xs" />已采纳</span>
                     </div>
@@ -142,13 +142,17 @@
           <aside class="hd-side col-stack sticky">
             <!-- 提问人卡 -->
             <div class="xj-card xj-user-card hd-usercard">
-              <img class="xj-avatar" :src="avatarFor(ticket.askerName, ticket.id)" alt="" />
-              <div class="xj-user-name">{{ ticket.askerName || '匿名求助人' }}</div>
+              <img class="xj-avatar" :src="avatarFor(ticket.askerName, ticket.id)" alt="" style="cursor:pointer" @click="openUser(ticket.askerName, (ticket as any).askerId)" />
+              <div class="xj-user-name" style="cursor:pointer" @click="openUser(ticket.askerName, (ticket as any).askerId)">{{ ticket.askerName || '匿名求助人' }}</div>
               <div class="xj-user-sub">{{ tagName(ticket.majorTagId) }}<template v-if="gradeLabel(ticket.gradeLevel)"> · {{ gradeLabel(ticket.gradeLevel) }}</template></div>
               <div class="xj-user-stats">
                 <div><b>{{ askerStats.asked }}</b><span>提问</span></div>
                 <div><b>{{ askerStats.solved }}</b><span>已解决</span></div>
                 <div><b>{{ askerStats.answered }}</b><span>回答</span></div>
+              </div>
+              <div class="hd-user-actions">
+                <button class="xj-btn sm" :class="followingAsker ? 'secondary' : 'study'" @click="toggleFollowAsker">{{ followingAsker ? '已关注' : '关注' }}</button>
+                <button class="xj-btn secondary sm" @click="openUser(ticket.askerName, (ticket as any).askerId)">查看主页</button>
               </div>
             </div>
 
@@ -204,8 +208,8 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useDemoStore, loadOr } from '../store/demo'
-import { avatarFor } from '../mock/demoData'
-import { helpApi, tagApi } from '../api'
+import { avatarFor, demoPersonByName } from '../mock/demoData'
+import { helpApi, tagApi, followApi } from '../api'
 import XLoader from '../components/XLoader.vue'
 import PageHero from '../components/PageHero.vue'
 import notFoundImg from '../assets/states/no-results.svg'
@@ -223,6 +227,25 @@ import icArrow from '../assets/icons/actions/arrow-right.svg'
 const route = useRoute()
 const router = useRouter()
 const demo = useDemoStore()
+
+// 打开某用户主页（真实态用其 userId，演示态用名字映射）
+function openUser(name: string, uid?: number) {
+  router.push('/u/' + (uid || demoPersonByName(name || '用户').id))
+}
+// 关注求助人（演示+真实双模式）
+const followingAsker = ref(false)
+async function toggleFollowAsker() {
+  const uid = (ticket.value as any)?.askerId || demoPersonByName((ticket.value as any)?.askerName || '求助人').id
+  if (demo.enabled) {
+    followingAsker.value = !followingAsker.value
+    ElMessage.success(followingAsker.value ? '已关注（演示模式）' : '已取消关注（演示模式）')
+    return
+  }
+  try {
+    if (followingAsker.value) { await followApi.unfollow(uid); followingAsker.value = false; ElMessage.success('已取消关注') }
+    else { await followApi.follow(uid); followingAsker.value = true; ElMessage.success('已关注') }
+  } catch { /* 拦截器提示 */ }
+}
 const id = Number(route.params.id)
 
 const loading = ref(false)
@@ -551,6 +574,8 @@ onMounted(() => {
 
 /* ---- 右栏 ---- */
 .hd-usercard { padding: 20px 16px; }
+.hd-user-actions { display: flex; gap: 8px; margin-top: 12px; }
+.hd-user-actions .xj-btn { flex: 1; }
 .hd-related { display: flex; gap: 10px; align-items: flex-start; padding: 12px 4px; border-bottom: 1px solid var(--xj-line); cursor: pointer; }
 .hd-related:last-child { border-bottom: 0; }
 .hd-related:hover .hd-rel-title { color: var(--accent-deep); }

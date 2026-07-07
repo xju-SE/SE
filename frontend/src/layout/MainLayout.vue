@@ -155,7 +155,9 @@ watch(() => auth.isLogin, loadUnread)
 .page-fade-leave-active { transition: opacity 0.12s; position: absolute; inset: 0; z-index: 0; overflow: hidden; }
 .page-fade-leave-to { opacity: 0; }
 .nav-ic { width: 17px; height: 17px; opacity: .68; }
-.nav-ic.lg { width: 21px; height: 21px; }
+.nav-ic.lg { width: 25px; height: 25px; opacity: .95; }
+/* 未读红点挪到按钮右上角，避免压住放大后的图标 */
+.nav-icon-btn .nav-dot { top: 4px; right: 4px; }
 .route-loading { position: fixed; inset: 64px 0 0 0; z-index: 45; display: grid; place-items: center; background: color-mix(in srgb, var(--xj-page) 76%, transparent); backdrop-filter: blur(3px); }
 .route-loading img { width: 74px; height: 74px; filter: drop-shadow(0 10px 26px rgba(8,20,38,.16)); }
 .fade-enter-active { transition: opacity .18s ease; }
