@@ -1,6 +1,5 @@
 package com.xju.sem.common.exception;
 
-import com.baomidou.mybatisplus.core.toolkit.exceptions.MybatisPlusException;
 import com.xju.sem.common.result.Result;
 import com.xju.sem.common.result.ResultCode;
 import lombok.extern.slf4j.Slf4j;

@@ -81,9 +81,11 @@ public class UserProgressServiceImpl implements UserProgressService {
         Map<Long, UserProgress> progressMap = mapByUser(userId);
 
         // §6.6 懒初始化：UNDECIDED 且本人从未有过该模板任何进度 → 批量 INSERT IGNORE 后重载
+        // progressMap 下面会被重新赋值，lambda 需 final 快照
+        final Map<Long, UserProgress> pmSnapshot = progressMap;
         if (RouteType.UNDECIDED.name().equals(res.routeType)
                 && !nodes.isEmpty()
-                && nodes.stream().noneMatch(n -> progressMap.containsKey(n.getId()))) {
+                && nodes.stream().noneMatch(n -> pmSnapshot.containsKey(n.getId()))) {
             lazyInit(userId, nodes);
             progressMap = mapByUser(userId);
         }
