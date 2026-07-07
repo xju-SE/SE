@@ -26,6 +26,10 @@ const routes = [
       { path: 'notifications', component: () => import('../views/Notifications.vue'), meta: { requiresAuth: true } },
       // 身份认证申请（用户侧提交/查看）
       { path: 'auth/apply', component: () => import('../views/AuthApply.vue'), meta: { requiresAuth: true } },
+      // 他人主页 / 消息中心（社交：关注 + 私信）
+      { path: 'u/:id', component: () => import('../views/UserProfile.vue'), meta: { requiresAuth: false } },
+      { path: 'messages', component: () => import('../views/MessageCenter.vue'), meta: { requiresAuth: true } },
+      { path: 'messages/:peerId', component: () => import('../views/MessageCenter.vue'), meta: { requiresAuth: true } },
     ],
   },
   // 管理后台：独立 AdminLayout 外壳（不再混在普通用户 MainLayout 里）

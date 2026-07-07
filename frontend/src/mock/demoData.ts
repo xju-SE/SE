@@ -163,3 +163,84 @@ export const demoExperiences = [
   { year: '2024', title: '大二 · 全国大学生数学建模竞赛', desc: '担任队长，获省级二等奖；完成校级大创项目立项。' },
   { year: '2024', title: '大三 · 确定考研方向', desc: '目标院校复习中，参与多次结构化求助并采纳学长经验。' },
 ]
+
+// ===== 他人主页 / 关注 / 消息中心（演示态兜底，对齐后端 PublicUserDTO / 会话 DTO 真实字段） =====
+export interface DemoPerson {
+  id: number; name: string; avatarIdx: number; role: string; grade: string; major: string
+  bio: string; tags: string[]; followerCount: number; followingCount: number; likes: number
+  postCount: number; following?: boolean
+}
+
+// 覆盖 feed 全部作者名，id 从 201 起；另附 id=1 对齐当前登录演示用户"林一航"
+export const demoPeople: DemoPerson[] = [
+  { id: 1, name: '林一航', avatarIdx: 9, role: 'STUDENT', grade: '大三', major: '计算机科学与技术', bio: '热爱算法与系统设计 · 结构化沉淀每一次成长', tags: ['数据结构', '算法', 'LeetCode'], followerCount: 128, followingCount: 76, likes: 960, postCount: 24, following: false },
+  { id: 201, name: '夏日微风', avatarIdx: 1, role: 'STUDENT', grade: '大二', major: '汉语言文学', bio: '记录校园里的小确幸，一起打卡好天气 ☀️', tags: ['校园分享', '摄影', '图书馆'], followerCount: 342, followingCount: 118, likes: 2130, postCount: 46, following: false },
+  { id: 202, name: '校学生会', avatarIdx: 2, role: 'STUDENT', grade: '官方', major: '学生组织', bio: '校园活动第一手发布 · 欢迎报名参与', tags: ['活动招募', '官方发布'], followerCount: 5680, followingCount: 12, likes: 18420, postCount: 132, following: true },
+  { id: 203, name: '林同学', avatarIdx: 3, role: 'STUDENT', grade: '大三', major: '公共管理', bio: '新生攻略搬运工，避坑经验持续更新', tags: ['生活攻略', '新生指南'], followerCount: 512, followingCount: 89, likes: 3040, postCount: 38, following: false },
+  { id: 204, name: '小城漫游记', avatarIdx: 4, role: 'STUDENT', grade: '大二', major: '旅游管理', bio: '周末不宅寝室，带你逛遍这座城市', tags: ['City Walk', '周末', '慢生活'], followerCount: 890, followingCount: 205, likes: 5210, postCount: 61, following: false },
+  { id: 205, name: '张同学', avatarIdx: 5, role: 'STUDENT', grade: '大四', major: '计算机科学与技术', bio: '数据结构 & C语言笔记整理，考前速通', tags: ['数据结构', 'C语言', '期末复习'], followerCount: 1204, followingCount: 56, likes: 8760, postCount: 27, following: true },
+  { id: 206, name: '小雨学姐', avatarIdx: 6, role: 'ALUMNI', grade: '研究生', major: '人工智能', bio: '吴恩达课程笔记持续更新，考研上岸经验分享', tags: ['机器学习', '考研经验', '笔记'], followerCount: 2360, followingCount: 41, likes: 15600, postCount: 19, following: false },
+  { id: 207, name: '数学建模小土豆', avatarIdx: 0, role: 'STUDENT', grade: '大三', major: '数学与应用数学', bio: '美赛 M 奖经验分享，建模路上不孤单', tags: ['数学建模', '美赛', '竞赛经验'], followerCount: 678, followingCount: 132, likes: 4320, postCount: 15, following: false },
+  { id: 208, name: '陈学长', avatarIdx: 2, role: 'ALUMNI', grade: '大四', major: '计算机科学与技术', bio: '操作系统 / 考研上岸，乐于解答学弟学妹问题', tags: ['操作系统', '课程资料', '考研'], followerCount: 1580, followingCount: 64, likes: 9870, postCount: 33, following: false },
+  { id: 209, name: '算法小王子', avatarIdx: 4, role: 'STUDENT', grade: '大三', major: '软件工程', bio: 'C 语言算法模板合集作者，刷题不迷路', tags: ['算法模板', 'C语言', '刷题'], followerCount: 940, followingCount: 47, likes: 6210, postCount: 21, following: false },
+]
+
+const DEMO_PERSON_BASE = {
+  role: 'STUDENT', grade: '大三', major: '计算机科学与技术',
+  bio: '这位同学还没有填写个人简介。', tags: ['新成员'],
+}
+
+/** 按 id 精确取人（找不到时按 id 派生稳定兜底，保证任意 id 都能渲染出主页）。 */
+export function demoPersonById(id: number): DemoPerson {
+  const found = demoPeople.find((p) => p.id === id)
+  if (found) return found
+  return {
+    id, name: '用户' + id, avatarIdx: id % 8,
+    ...DEMO_PERSON_BASE,
+    followerCount: 20 + (id * 7) % 300, followingCount: 10 + (id * 3) % 120,
+    likes: 100 + (id * 13) % 2000, postCount: 5 + id % 40, following: false,
+  }
+}
+
+/** 按作者名取人（Dashboard 帖子作者点击跳转用），找不到则按名字生成稳定 id（300+）。 */
+export function demoPersonByName(name: string): DemoPerson {
+  const found = demoPeople.find((p) => p.name === name)
+  if (found) return found
+  const seed = [...(name || 'X')].reduce((s, c) => s + c.charCodeAt(0), 0)
+  const id = 300 + (seed % 600)
+  return {
+    id, name: name || '用户' + id, avatarIdx: seed % 8,
+    ...DEMO_PERSON_BASE,
+    followerCount: 20 + (seed * 7) % 300, followingCount: 10 + (seed * 3) % 120,
+    likes: 100 + (seed * 13) % 2000, postCount: 5 + seed % 40, following: false,
+  }
+}
+
+// 消息中心：会话列表 + 按对方 id 的历史记录（me 固定 senderId=1，对齐演示登录用户）
+export const demoConversations = [
+  { peerId: 205, peerName: '张同学', lastContent: '数据结构那份复习资料我发你啦，记得看第三章～', lastAt: '10分钟前', unreadCount: 2 },
+  { peerId: 206, peerName: '小雨学姐', lastContent: '好的，考研复习进度有问题随时来问我', lastAt: '昨天 21:40', unreadCount: 0 },
+  { peerId: 208, peerName: '陈学长', lastContent: '进程调度那道题的思路我再补充一下', lastAt: '前天 09:12', unreadCount: 1 },
+]
+
+const DEMO_HISTORY: Record<number, { id: number; senderId: number; receiverId: number; content: string; isRead: number; createdAt: string }[]> = {
+  205: [
+    { id: 1, senderId: 1, receiverId: 205, content: '学长在吗，数据结构期末复习资料能麻烦发我一份吗', isRead: 1, createdAt: '昨天 19:02' },
+    { id: 2, senderId: 205, receiverId: 1, content: '在的，稍等我整理一下', isRead: 1, createdAt: '昨天 19:05' },
+    { id: 3, senderId: 205, receiverId: 1, content: '数据结构那份复习资料我发你啦，记得看第三章～', isRead: 0, createdAt: '10分钟前' },
+    { id: 4, senderId: 205, receiverId: 1, content: '有问题随时问我', isRead: 0, createdAt: '9分钟前' },
+  ],
+  206: [
+    { id: 5, senderId: 1, receiverId: 206, content: '学姐好，想请教一下机器学习考研复习顺序', isRead: 1, createdAt: '昨天 21:30' },
+    { id: 6, senderId: 206, receiverId: 1, content: '好的，考研复习进度有问题随时来问我', isRead: 1, createdAt: '昨天 21:40' },
+  ],
+  208: [
+    { id: 7, senderId: 208, receiverId: 1, content: '进程调度那道题的思路我再补充一下', isRead: 0, createdAt: '前天 09:12' },
+  ],
+}
+
+export function demoHistory(peerId: number): { id: number; senderId: number; receiverId: number; content: string; isRead: number; createdAt: string }[] {
+  return DEMO_HISTORY[peerId] || [
+    { id: peerId * 100, senderId: peerId, receiverId: 1, content: '你好！', isRead: 1, createdAt: '3天前' },
+  ]
+}

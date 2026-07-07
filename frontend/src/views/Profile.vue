@@ -12,7 +12,7 @@
             <span class="pf-verify" title="已认证">✔</span>
             <span class="pf-cert">{{ isLife ? '生活圈认证' : '学业圈认证' }}</span>
           </div>
-          <p class="pf-bio">{{ isLife ? '热爱生活，喜欢探索 · 记录美好，连接同好' : '热爱算法与系统设计 · 结构化沉淀每一次成长' }}</p>
+          <p class="pf-bio">{{ bioText }}</p>
           <div class="pf-meta">
             <span>🎓 {{ me.major }} · {{ me.grade }}</span>
             <span>🏫 新疆大学</span>
@@ -23,7 +23,7 @@
           </div>
         </div>
         <div class="pf-cta">
-          <button class="xj-btn ghosty" @click="ElMessage.info('资料编辑开发中')">✎ 编辑资料</button>
+          <button class="xj-btn ghosty" @click="openEditDialog">✎ 编辑资料</button>
           <button class="xj-btn solidw" @click="switchScene">⇆ 切换{{ isLife ? '学业圈' : '生活圈' }}</button>
         </div>
       </div>
@@ -93,9 +93,9 @@
         <!-- ===== 右栏：成就 + 标签 + 近期动态 + 设置/演示开关 ===== -->
         <aside class="col-stack">
           <div class="xj-card side-card">
-            <div class="sc-head"><span class="sc-title">个人成就 <span class="demo-chip">演示</span></span><span class="sc-more">查看全部 ›</span></div>
+            <div class="sc-head"><span class="sc-title">个人成就 <span class="demo-chip">演示</span></span><span class="sc-more" @click="openBadgeDialog">管理 ›</span></div>
             <div class="ach">
-              <div class="ach-item" v-for="b in badges" :key="b.name">
+              <div class="ach-item" v-for="b in visibleBadges" :key="b.id">
                 <span class="hex" :style="{ background: b.c }">{{ b.ic }}</span>
                 <span class="ach-name">{{ b.name }}</span><span class="ach-lv">{{ b.lv }}</span>
               </div>
@@ -103,15 +103,15 @@
           </div>
 
           <div class="xj-card side-card">
-            <div class="sc-head"><span class="sc-title">我的标签</span><span class="sc-more">管理 ›</span></div>
+            <div class="sc-head"><span class="sc-title">我的标签</span><span class="sc-more" @click="openTagDialog">管理 ›</span></div>
             <div class="tags">
-              <span class="fc-tag" v-for="t in myTags" :key="t"># {{ t }}</span>
-              <span class="fc-tag add">＋ 添加标签</span>
+              <span class="fc-tag" v-for="t in displayTags" :key="t"># {{ t }}</span>
+              <span class="fc-tag add" @click="openTagDialog">＋ 添加标签</span>
             </div>
           </div>
 
           <div class="xj-card side-card">
-            <div class="sc-head"><span class="sc-title">近期动态</span><span class="sc-more" @click="$router.push('/notifications')">查看全部 ›</span></div>
+            <div class="sc-head"><span class="sc-title">近期动态</span><span class="sc-more" @click="$router.push('/timeline')">查看全部 ›</span></div>
             <div class="act" v-for="a in recent" :key="a.t">
               <span class="act-ic">{{ a.ic }}</span>
               <div class="act-m"><div class="act-t">{{ a.t }}</div><div class="act-time">{{ a.time }}</div></div>
@@ -137,15 +137,69 @@
         </aside>
       </div>
     </div>
+
+    <!-- 编辑个人资料 -->
+    <el-dialog v-model="editDialog.visible" title="编辑个人资料" width="420px" class="pf-dialog">
+      <div class="pf-field">
+        <label>昵称</label>
+        <el-input v-model="editDialog.form.username" maxlength="20" placeholder="请输入昵称" />
+      </div>
+      <div class="pf-field">
+        <label>简介</label>
+        <el-input v-model="editDialog.form.bio" type="textarea" :rows="3" maxlength="80" show-word-limit placeholder="介绍一下自己吧" />
+      </div>
+      <template #footer>
+        <button class="xj-btn secondary sm" @click="editDialog.visible = false">取消</button>
+        <button class="xj-btn sm" :class="isLife ? 'life' : 'study'" :disabled="editDialog.submitting" @click="onSaveProfile">{{ editDialog.submitting ? '保存中…' : '保存' }}</button>
+      </template>
+    </el-dialog>
+
+    <!-- 徽章管理 -->
+    <el-dialog v-model="badgeDialogVisible" title="徽章管理" width="440px" class="pf-dialog">
+      <div class="bm-list">
+        <div class="bm-item" v-for="b in myBadgeList" :key="b.id">
+          <span class="hex bm-hex" :style="{ background: b.c }">{{ b.ic }}</span>
+          <div class="bm-info">
+            <div class="bm-name">{{ b.name }}</div>
+            <div class="bm-lv" v-if="b.lv">{{ b.lv }}</div>
+          </div>
+          <div class="bm-ops">
+            <button class="xj-btn sm" :class="b.pinned ? (isLife ? 'life' : 'study') : 'secondary'" @click="toggleBadgeFlag(b, 'pinned')">{{ b.pinned ? '已置顶' : '置顶' }}</button>
+            <button class="xj-btn sm" :class="b.hidden ? 'danger' : 'secondary'" @click="toggleBadgeFlag(b, 'hidden')">{{ b.hidden ? '已隐藏' : '隐藏' }}</button>
+          </div>
+        </div>
+        <p v-if="!myBadgeList.length" class="bm-empty">暂无勋章</p>
+      </div>
+      <template #footer>
+        <button class="xj-btn secondary sm" @click="badgeDialogVisible = false">关闭</button>
+      </template>
+    </el-dialog>
+
+    <!-- 我的标签管理（演示态：后端暂无用户标签管理端点，本地维护） -->
+    <el-dialog v-model="tagDialogVisible" title="我的标签管理" width="420px" class="pf-dialog">
+      <div class="tag-edit-list">
+        <span class="fc-tag ed" v-for="(t, i) in localTags" :key="t"># {{ t }}<i class="tag-x" @click="removeTag(i)">×</i></span>
+        <span v-if="!localTags.length" class="bm-empty">暂无标签</span>
+      </div>
+      <div class="tag-add-row">
+        <el-input v-model="newTag" placeholder="输入标签名称后添加" maxlength="12" @keyup.enter="addTag" />
+        <button class="xj-btn sm" :class="isLife ? 'life' : 'study'" @click="addTag">＋ 添加</button>
+      </div>
+      <template #footer>
+        <button class="xj-btn secondary sm" @click="tagDialogVisible = false">取消</button>
+        <button class="xj-btn sm" :class="isLife ? 'life' : 'study'" @click="saveTags">保存</button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '../store/auth'
-import { useDemoStore } from '../store/demo'
+import { useDemoStore, loadOr } from '../store/demo'
+import { userApi, badgeApi } from '../api'
 import { avatarFor, demoMe, demoLifeFeed, demoStudyFeed } from '../mock/demoData'
 import HeatmapMatrix from '../components/HeatmapMatrix.vue'
 import GrowthCurve from '../components/GrowthCurve.vue'
@@ -159,8 +213,13 @@ const demo = useDemoStore()
 
 const isLife = computed(() => route.query.scene === 'life')
 const heroBg = computed(() => (isLife.value ? heroGreen : heroBlue))
-const me = computed(() => ({ username: auth.user?.username || demoMe.username, grade: demoMe.grade, major: demoMe.major }))
+
+// 资料编辑本地覆盖：保存成功后立即生效（真实模式下服务端也已持久化，刷新后由 /users/me 权威数据覆盖）
+const profileOverride = reactive<{ username: string | null; bio: string | null }>({ username: null, bio: null })
+const me = computed(() => ({ username: profileOverride.username || auth.user?.username || demoMe.username, grade: demoMe.grade, major: demoMe.major }))
 const meAvatar = computed(() => avatarFor(me.value.username, 9))
+const defaultBio = computed(() => (isLife.value ? '热爱生活，喜欢探索 · 记录美好，连接同好' : '热爱算法与系统设计 · 结构化沉淀每一次成长'))
+const bioText = computed(() => profileOverride.bio ?? defaultBio.value)
 
 // 统计（真实概念：资源/收藏/学习天数/被采纳/勋章；生活圈=贡献/活动/收藏/勋章）
 const stats = computed(() => isLife.value
@@ -198,18 +257,37 @@ const contentTabs = computed(() => isLife.value ? ['动态', '活动', '收藏']
 const ctab = ref(0)
 const myContent = computed(() => (isLife.value ? demoLifeFeed : demoStudyFeed).slice(0, 2))
 
-// 成就（贡献者体系）
-const badges = computed(() => isLife.value ? [
+// 成就（贡献者体系）：真实模式走 badgeApi.myBadges()，失败/演示态回退下列示例勋章
+interface AchBadge { id: number; ic: string; name: string; lv: string; c: string; pinned: boolean; hidden: boolean }
+const badgeColors = ['#EAF2FF', '#F4ECFF', '#FFF5DE', '#E9F9EF', '#E8F7F4', '#FFF0EF']
+const badgesDemo = computed<AchBadge[]>(() => (isLife.value ? [
   { ic: '🌿', name: '活跃分享者', lv: 'Lv.3', c: '#E9F9EF' }, { ic: '📷', name: '校园记录者', lv: 'Lv.2', c: '#FFF5DE' },
   { ic: '🤝', name: '社团达人', lv: 'Lv.2', c: '#F4ECFF' }, { ic: '🚶', name: '城市探索者', lv: 'Lv.1', c: '#EAF2FF' }, { ic: '🔥', name: '热门发布者', lv: 'Lv.1', c: '#FFF0EF' },
 ] : [
   { ic: '🎯', name: '学习达人', lv: 'Lv.3', c: '#EAF2FF' }, { ic: '📘', name: '笔记作者', lv: 'Lv.3', c: '#F4ECFF' },
   { ic: '🧩', name: '项目协作者', lv: 'Lv.2', c: '#FFF5DE' }, { ic: '📤', name: '资源分享者', lv: 'Lv.2', c: '#E9F9EF' }, { ic: '✅', name: '刷题先锋', lv: 'Lv.2', c: '#E8F7F4' },
-])
+]).map((b, i) => ({ id: i + 1, ic: b.ic, name: b.name, lv: b.lv, c: b.c, pinned: i < 2, hidden: false })))
+
+const myBadgeList = ref<AchBadge[]>([])
+async function loadBadges() {
+  myBadgeList.value = await loadOr(demo.enabled, async () => {
+    const list: any[] = await badgeApi.myBadges()
+    return list.map((b, i) => ({
+      id: b.id, ic: b.icon || '🏅', name: b.name, lv: b.pinned ? '置顶' : '',
+      c: badgeColors[i % badgeColors.length], pinned: !!b.pinned, hidden: !!b.hidden,
+    }))
+  }, badgesDemo.value)
+}
+// 成就展示区：隐藏的勋章不再展示，置顶的排在前面
+const visibleBadges = computed(() => [...myBadgeList.value].filter((b) => !b.hidden).sort((a, b) => Number(b.pinned) - Number(a.pinned)))
 
 const myTags = computed(() => isLife.value
   ? ['摄影爱好者', '徒步旅行', '音乐现场', '校园记录', '社团活动', '城市探索']
   : ['数据结构', '算法', '计算机网络', '操作系统', 'Java', '后端开发', 'LeetCode', '团队协作'])
+// 我的标签管理：后端暂无用户标签管理端点，演示态本地维护，保存后覆盖展示
+const tagsOverride = ref<string[] | null>(null)
+const displayTags = computed(() => tagsOverride.value ?? myTags.value)
+watch(isLife, () => { tagsOverride.value = null })
 
 const recent = computed(() => isLife.value ? [
   { ic: '✎', t: '发布了新动态《毕业季的校园》', time: '1 小时前' },
@@ -231,6 +309,102 @@ function toggleDemo() {
   demo.toggle()
   ElMessage.success(demo.enabled ? '已进入演示模式' : '已退出演示模式，将连接真实后端')
 }
+
+// ===== (1) 编辑个人资料 =====
+const editDialog = reactive({ visible: false, submitting: false, form: { username: '', bio: '' } })
+function openEditDialog() {
+  editDialog.form.username = me.value.username
+  editDialog.form.bio = bioText.value
+  editDialog.visible = true
+}
+async function onSaveProfile() {
+  const username = editDialog.form.username.trim()
+  const bio = editDialog.form.bio.trim()
+  if (!username) {
+    ElMessage.warning('昵称不能为空')
+    return
+  }
+  editDialog.submitting = true
+  if (demo.enabled) {
+    await new Promise((r) => setTimeout(r, 400))
+    profileOverride.username = username
+    profileOverride.bio = bio
+    ElMessage.success('资料已更新（演示模式）')
+    editDialog.submitting = false
+    editDialog.visible = false
+    return
+  }
+  try {
+    await userApi.updateMe({ username, bio })
+    profileOverride.username = username
+    profileOverride.bio = bio
+    if (auth.user) auth.user.username = username
+    ElMessage.success('资料已更新')
+    editDialog.visible = false
+  } catch {
+    // 错误已由请求拦截器统一提示
+  } finally {
+    editDialog.submitting = false
+  }
+}
+
+// ===== (3) 徽章管理 =====
+const badgeDialogVisible = ref(false)
+function openBadgeDialog() {
+  badgeDialogVisible.value = true
+}
+async function toggleBadgeFlag(b: AchBadge, field: 'pinned' | 'hidden') {
+  const next = !b[field]
+  if (demo.enabled) {
+    await new Promise((r) => setTimeout(r, 300))
+    b[field] = next
+    ElMessage.success('已更新（演示模式）')
+    return
+  }
+  try {
+    await badgeApi.setFlags(b.id, { [field]: next })
+    ElMessage.success('已更新')
+    await loadBadges()
+  } catch {
+    // 错误已由请求拦截器统一提示
+  }
+}
+
+// ===== (4) 我的标签管理（演示态：后端暂无用户标签管理端点，本地维护） =====
+const tagDialogVisible = ref(false)
+const localTags = ref<string[]>([])
+const newTag = ref('')
+function openTagDialog() {
+  localTags.value = [...displayTags.value]
+  newTag.value = ''
+  tagDialogVisible.value = true
+}
+function removeTag(i: number) {
+  localTags.value.splice(i, 1)
+}
+function addTag() {
+  const v = newTag.value.trim()
+  if (!v) return
+  if (localTags.value.includes(v)) {
+    ElMessage.warning('标签已存在')
+    newTag.value = ''
+    return
+  }
+  localTags.value.push(v)
+  newTag.value = ''
+}
+function saveTags() {
+  tagsOverride.value = [...localTags.value]
+  ElMessage.success('标签已更新（演示模式）')
+  tagDialogVisible.value = false
+}
+
+onMounted(() => {
+  loadBadges()
+})
+watch(isLife, () => {
+  loadBadges()
+})
 </script>
 
 <style scoped>
@@ -330,4 +504,28 @@ function toggleDemo() {
 
 @media (max-width: 1180px) { .pf-grid { grid-template-columns: minmax(0,1fr) 300px; } .pf-grid > aside:first-child { display: none; } }
 @media (max-width: 900px) { .pf-grid { grid-template-columns: 1fr; } .pf-inner { flex-direction: column; text-align: center; } .pf-stats { justify-content: center; } .pf-cta { flex-direction: row; } }
+
+/* ===== 弹窗：编辑资料 / 徽章管理 / 标签管理 ===== */
+:deep(.pf-dialog.el-dialog) { border-radius: 16px; font-family: var(--xj-font); }
+:deep(.pf-dialog .el-dialog__title) { font-weight: 800; color: var(--xj-ink); }
+:deep(.pf-dialog .el-dialog__footer) { display: flex; justify-content: flex-end; gap: 10px; }
+.pf-field { margin-bottom: 16px; }
+.pf-field label { display: block; font-size: 12.5px; font-weight: 700; color: var(--xj-subtle); margin-bottom: 6px; }
+
+.bm-list { max-height: 50vh; overflow-y: auto; }
+.bm-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--xj-line); }
+.bm-item:last-child { border-bottom: 0; }
+.bm-hex { flex: none; width: 42px; height: 42px; font-size: 18px; }
+.bm-info { flex: 1; min-width: 0; }
+.bm-name { font-size: 13.5px; font-weight: 750; color: var(--xj-ink); }
+.bm-lv { font-size: 11px; color: var(--xj-subtle); margin-top: 2px; }
+.bm-ops { display: flex; gap: 8px; flex: none; }
+.bm-empty { text-align: center; color: var(--xj-subtle); font-size: 12.5px; padding: 18px 0; }
+
+.tag-edit-list { display: flex; flex-wrap: wrap; gap: 8px; min-height: 30px; margin-bottom: 14px; }
+.fc-tag.ed { gap: 6px; padding-right: 6px; }
+.tag-x { font-style: normal; cursor: pointer; color: var(--xj-subtle); font-weight: 700; padding: 0 2px; }
+.tag-x:hover { color: var(--xj-danger, #ef4444); }
+.tag-add-row { display: flex; gap: 10px; align-items: center; }
+.tag-add-row .xj-btn { flex: none; }
 </style>

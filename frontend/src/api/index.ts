@@ -28,6 +28,36 @@ export const contributorCertApi = {
   apply: (data: { honorCertUrl?: string; note?: string }) => request.post('/contributor-cert-applications', data),
 }
 
+// 编辑个人资料（真实端点已存在）：PUT /users/me，UpdateProfileRequest
+export const userApi = {
+  updateMe: (data: any) => request.put('/users/me', data),
+  // 他人公开主页：GET /users/{id}/public → PublicUserDTO{userId,username,role,authStatus,bio,major,grade,avatarUrl,tags[],followerCount,followingCount,following,postCount,badges[]}
+  publicProfile: (id: number) => request.get(`/users/${id}/public`),
+}
+
+// 关注：POST/DELETE /users/{id}/follow；GET /users/{id}/follow-status → {following,followerCount,followingCount}
+export const followApi = {
+  follow: (id: number) => request.post(`/users/${id}/follow`),
+  unfollow: (id: number) => request.delete(`/users/${id}/follow`),
+  status: (id: number) => request.get(`/users/${id}/follow-status`),
+}
+
+// 私信消息中心：会话列表/历史/发送/标记已读/未读数
+export const messageApi = {
+  conversations: () => request.get('/messages/conversations'),
+  history: (peerId: number) => request.get(`/messages/conversations/${peerId}`),
+  send: (receiverId: number, content: string) => request.post('/messages', { receiverId, content }),
+  markRead: (peerId: number) => request.patch(`/messages/conversations/${peerId}/read`),
+  unreadCount: () => request.get('/messages/unread-count'),
+}
+
+// 徽章：GET /users/{id}/badges（公开）/ /users/me/badges（全部）；PATCH /badges/{id} 置顶/隐藏
+export const badgeApi = {
+  userBadges: (id: number) => request.get(`/users/${id}/badges`),
+  myBadges: () => request.get('/users/me/badges'),
+  setFlags: (id: number, data: { pinned?: boolean; hidden?: boolean }) => request.patch(`/badges/${id}`, data),
+}
+
 // 标签只读查询（供各表单下拉 / 按 tagId 反查名称，tagType 为空返回全部）
 export const tagApi = {
   list: (tagType?: string) => request.get('/tags', tagType ? { params: { tagType } } : undefined),

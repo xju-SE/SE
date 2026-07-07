@@ -446,3 +446,48 @@ CREATE TABLE report (
   PRIMARY KEY (id),
   KEY idx_status (status)
 ) ENGINE=InnoDB COMMENT='举报';
+-- 关注关系
+CREATE TABLE IF NOT EXISTS user_follow (
+  id          BIGINT   NOT NULL AUTO_INCREMENT,
+  follower_id BIGINT   NOT NULL COMMENT '关注者',
+  followee_id BIGINT   NOT NULL COMMENT '被关注者',
+  deleted     TINYINT  NOT NULL DEFAULT 0,
+  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_follow (follower_id, followee_id),
+  KEY idx_followee (followee_id)
+) ENGINE=InnoDB COMMENT='用户关注关系';
+
+-- 私信消息
+CREATE TABLE IF NOT EXISTS message (
+  id          BIGINT       NOT NULL AUTO_INCREMENT,
+  sender_id   BIGINT       NOT NULL COMMENT '发送者',
+  receiver_id BIGINT       NOT NULL COMMENT '接收者',
+  content     VARCHAR(2000) NOT NULL,
+  is_read     TINYINT      NOT NULL DEFAULT 0 COMMENT '接收者是否已读',
+  deleted     TINYINT      NOT NULL DEFAULT 0,
+  created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_pair (sender_id, receiver_id),
+  KEY idx_receiver_unread (receiver_id, is_read)
+) ENGINE=InnoDB COMMENT='站内私信';
+
+-- 用户徽章/成就
+CREATE TABLE IF NOT EXISTS user_badge (
+  id          BIGINT      NOT NULL AUTO_INCREMENT,
+  user_id     BIGINT      NOT NULL,
+  badge_code  VARCHAR(40) NOT NULL COMMENT '徽章代码',
+  badge_name  VARCHAR(60) NOT NULL,
+  icon        VARCHAR(16) NULL COMMENT '展示用emoji/代号',
+  pinned      TINYINT     NOT NULL DEFAULT 0 COMMENT '置顶展示',
+  hidden      TINYINT     NOT NULL DEFAULT 0 COMMENT '隐藏',
+  awarded_at  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  deleted     TINYINT     NOT NULL DEFAULT 0,
+  created_at  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_user_badge (user_id, badge_code),
+  KEY idx_user (user_id)
+) ENGINE=InnoDB COMMENT='用户徽章';

@@ -6,6 +6,10 @@
         <XLogo variant="lockup" :size="30" />
       </router-link>
 
+      <div v-if="route.path !== '/dashboard'" class="nav-icon-btn" title="返回" @click="router.back()">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+      </div>
+
       <nav class="app-nav-links">
         <router-link to="/dashboard" class="app-nav-link" :class="{ active: isHomeNeutral }">双圈首页</router-link>
         <router-link :to="{ path: '/dashboard', query: { scene: 'study' } }" class="app-nav-link" :class="{ active: route.query.scene === 'study' && isDashboard }">学业圈</router-link>
@@ -17,12 +21,17 @@
 
       <div class="nav-search">
         <img :src="icSearch" class="nav-ic" alt="" />
-        <input v-model="keyword" placeholder="搜索内容、知识、求助…" @keyup.enter="doSearch" />
+        <input v-model="keyword" placeholder="搜索内容、知识、求助…" @focus="onSearchFocus" @keyup.enter="doSearch" />
       </div>
 
       <div class="nav-icon-btn" title="通知" @click="router.push('/notifications')">
         <img :src="icBell" class="nav-ic lg" alt="通知" />
         <span v-if="unread > 0" class="nav-dot">{{ unread > 99 ? '99+' : unread }}</span>
+      </div>
+
+      <div class="nav-icon-btn" title="私信" @click="router.push('/messages')">
+        <img :src="icMessage" class="nav-ic lg" alt="私信" />
+        <span v-if="msgUnread > 0" class="nav-dot">{{ msgUnread > 99 ? '99+' : msgUnread }}</span>
       </div>
 
       <div v-if="showUser" class="nav-user" @click="menuOpen = !menuOpen" style="position:relative">
@@ -32,6 +41,7 @@
         <transition name="fade-pop">
           <div v-if="menuOpen" class="user-menu" @click.stop>
             <router-link to="/profile" class="um-item" @click="menuOpen = false">个人中心</router-link>
+            <router-link to="/auth/apply" class="um-item" @click="menuOpen = false">身份认证</router-link>
             <router-link v-if="auth.isAdmin" to="/admin" class="um-item" @click="menuOpen = false">管理后台</router-link>
             <div class="um-sep"></div>
             <div v-if="auth.isLogin" class="um-item danger" @click="logout">退出登录</div>
@@ -64,12 +74,13 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
-import { useDemoStore } from '../store/demo'
-import { notificationApi } from '../api'
+import { useDemoStore, loadOr } from '../store/demo'
+import { notificationApi, messageApi } from '../api'
 import { avatarFor, demoMe, demoNotifications } from '../mock/demoData'
 import XLogo from '../components/XLogo.vue'
 import icSearch from '../assets/icons/actions/search.svg'
 import icBell from '../assets/icons/actions/bell.svg'
+import icMessage from '../assets/icons/navigation/message.svg'
 import xLoader from '../assets/brand/x-loader.svg'
 
 const route = useRoute()
@@ -79,6 +90,7 @@ const demo = useDemoStore()
 
 const keyword = ref('')
 const unread = ref(0)
+const msgUnread = ref(0)
 const menuOpen = ref(false)
 const routeLoading = ref(false)
 let loadingTimer: ReturnType<typeof setTimeout> | null = null
@@ -107,12 +119,23 @@ function doSearch() {
   if (!keyword.value.trim()) return
   router.push({ path: '/knowledge', query: { q: keyword.value.trim() } })
 }
+function onSearchFocus() {
+  if (route.path !== '/knowledge') {
+    router.push({ path: '/knowledge', query: keyword.value.trim() ? { q: keyword.value.trim() } : {} })
+  }
+}
+async function loadMsgUnread() {
+  msgUnread.value = await loadOr(demo.enabled, async () => (await messageApi.unreadCount()) as unknown as number, 2)
+}
 function logout() {
   menuOpen.value = false
   auth.logout()
   router.push('/login')
 }
-onMounted(loadUnread)
+onMounted(() => {
+  loadUnread()
+  loadMsgUnread()
+})
 watch(() => auth.isLogin, loadUnread)
 </script>
 

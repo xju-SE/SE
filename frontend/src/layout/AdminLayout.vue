@@ -10,6 +10,9 @@
         <XLogo variant="lockup" :size="26" />
         <span class="admin-tag">管理后台</span>
       </router-link>
+      <div class="nav-icon-btn" title="返回" @click="router.back()">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+      </div>
       <div class="admin-top-spacer"></div>
       <router-link to="/dashboard" class="xj-btn secondary sm admin-back">返回应用</router-link>
       <div class="admin-user">
@@ -46,7 +49,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
 import { useDemoStore } from '../store/demo'
 import { avatarFor, demoMe } from '../mock/demoData'
@@ -58,6 +61,7 @@ import icReport from '../assets/icons/status/warning.svg'
 import icTag from '../assets/icons/content/announcement.svg'
 
 const route = useRoute()
+const router = useRouter()
 const auth = useAuthStore()
 const demo = useDemoStore()
 

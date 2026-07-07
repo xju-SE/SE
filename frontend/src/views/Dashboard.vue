@@ -33,10 +33,10 @@
           <span class="ec-more" @click="enter('life')">更多 ›</span>
         </div>
         <div class="ec-life" v-for="p in lifePreview" :key="p.id" @click="enter('life')">
-          <img class="el-avatar" :src="avatarFor(p.author, p.avatarIdx)" alt="" />
+          <img class="el-avatar" :src="avatarFor(p.author, p.avatarIdx)" alt="" style="cursor:pointer" @click.stop="$router.push('/u/' + demoPersonByName(p.author).id)" />
           <div class="el-main">
             <div class="el-title">{{ p.title }} <span class="xj-badge success sm">{{ p.tag }}</span></div>
-            <div class="el-meta">{{ p.author }} · {{ p.time }}</div>
+            <div class="el-meta" style="cursor:pointer" @click.stop="$router.push('/u/' + demoPersonByName(p.author).id)">{{ p.author }} · {{ p.time }}</div>
           </div>
           <img v-if="p.images.length" class="el-thumb" :src="p.images[0]" alt="" />
         </div>
@@ -52,7 +52,7 @@
           <span class="es-icon" :class="studyIconClass(i)"><img :src="studyIcon(i)" alt="" /></span>
           <div class="es-main">
             <div class="es-title"><span class="es-title-txt">{{ p.title }}</span><span v-if="i === 0" class="es-new">NEW</span></div>
-            <div class="es-meta">{{ p.author }} · {{ p.a }} 收藏</div>
+            <div class="es-meta" style="cursor:pointer" @click.stop="$router.push('/u/' + demoPersonByName(p.author).id)">{{ p.author }} · {{ p.a }} 收藏</div>
           </div>
         </div>
       </div>
@@ -149,8 +149,8 @@
           <div v-else class="feed-list">
             <article v-for="p in feed" :key="p.id" class="xj-card feed-card" :class="isLife ? 'life' : 'study'">
               <div class="fc-head">
-                <img class="xj-avatar" :src="avatarFor(p.author, p.avatarIdx)" alt="" />
-                <div class="fc-author">
+                <img class="xj-avatar" :src="avatarFor(p.author, p.avatarIdx)" alt="" style="cursor:pointer" @click.stop="$router.push('/u/' + demoPersonByName(p.author).id)" />
+                <div class="fc-author" style="cursor:pointer" @click.stop="$router.push('/u/' + demoPersonByName(p.author).id)">
                   <div class="a-name">{{ p.author }} <span class="xj-badge" :class="isLife ? 'success' : 'info'">{{ p.tag }}</span></div>
                   <div class="a-meta"><span>{{ p.time }}</span><span>· {{ p.source }}</span></div>
                 </div>
@@ -231,6 +231,7 @@ import XLoader from '../components/XLoader.vue'
 import {
   avatarFor, demoLifeFeed, demoStudyFeed, demoHotLife, demoHotStudy,
   demoRecoLife, demoRecoStudy, demoTagsLife, demoTagsStudy, demoNotifications, demoMe,
+  demoPersonByName,
 } from '../mock/demoData'
 import { knowledgeApi, helpApi } from '../api'
 import bgLife from '../assets/bg/生活圈背景.png'
