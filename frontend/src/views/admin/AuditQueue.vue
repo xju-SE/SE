@@ -5,10 +5,11 @@
       <!-- 运营统计卡片行 -->
       <div class="stat-row">
         <div class="xj-card stat-tile" v-for="s in statTiles" :key="s.label">
-          <img :src="s.icon" class="st-icon" alt="" />
+          <span class="st-ic" :class="s.color"><img :src="s.icon" class="st-icon" alt="" /></span>
           <div class="st-main">
             <b>{{ s.value ?? '-' }}</b>
             <span>{{ s.label }}</span>
+            <em class="st-trend" :class="s.trendDir">{{ s.trend }}</em>
           </div>
         </div>
       </div>
@@ -33,27 +34,49 @@
       <template v-else>
         <div v-if="tasks.length" class="aq-list">
           <article v-for="row in tasks" :key="row.id" class="xj-card study aq-card">
-            <div class="aq-top">
-              <span class="xj-badge" :class="targetTypeBadge(row.targetType)">{{ targetTypeLabel(row.targetType) }}</span>
-              <span class="xj-badge" :class="statusBadge(row.status)">{{ statusLabel(row.status) }}</span>
+            <div class="aq-head">
+              <div class="aq-submitter">
+                <img :src="avatarFor(row.submitterName || String(row.submitterId || ''), row.submitterId || 0)" class="aq-avatar" alt="" />
+                <div class="aq-sub-info">
+                  <span class="aq-sub-name">{{ row.submitterName || '匿名用户' }}</span>
+                  <span class="aq-sub-time">{{ row.createdAt || '-' }}</span>
+                </div>
+              </div>
+              <div class="aq-top">
+                <span class="xj-badge" :class="targetTypeBadge(row.targetType)">{{ targetTypeLabel(row.targetType) }}</span>
+                <span class="xj-badge" :class="statusBadge(row.status)">{{ statusLabel(row.status) }}</span>
+              </div>
             </div>
             <h3 class="aq-title">{{ row.targetSummary || ('#' + row.targetId) }}</h3>
-            <div class="aq-meta"><span>提交人 · {{ row.submitterName || '-' }}</span><span>{{ row.createdAt || '-' }}</span></div>
 
             <!-- 知识候选：隐私预检提示 + 三态 checklist -->
             <div v-if="row.targetType === 'KNOWLEDGE_ENTRY'" class="aq-privacy">
               <div class="xj-toast" :class="row.privacyAlert ? 'danger' : 'success'">
-                <img v-if="row.privacyAlert" :src="icLock" class="xj-toast-icon" alt="" />
-                <img v-else :src="icVerified" class="xj-toast-icon" alt="" />
+                <span class="aq-toast-icwrap" :class="row.privacyAlert ? 'danger' : 'success'">
+                  <img v-if="row.privacyAlert" :src="icLock" class="xj-toast-icon" alt="" />
+                  <img v-else :src="icVerified" class="xj-toast-icon" alt="" />
+                </span>
                 <div>
                   <div class="xj-toast-title">{{ row.privacyAlert ? '自动预检发现疑似隐私信息，请重点核实' : '自动预检未发现隐私风险' }}</div>
                   <div class="xj-toast-desc">三项任一勾选，将强制转为退回</div>
                 </div>
               </div>
               <div class="aq-checklist">
-                <label class="aq-check"><input type="checkbox" v-model="row.checklist.hasRealName" /> 检出真实姓名</label>
-                <label class="aq-check"><input type="checkbox" v-model="row.checklist.hasContact" /> 检出联系方式</label>
-                <label class="aq-check"><input type="checkbox" v-model="row.checklist.hasLocatableCombo" /> 检出可反向定位信息组合</label>
+                <label class="aq-check-card" :class="{ on: row.checklist.hasRealName }">
+                  <input type="checkbox" v-model="row.checklist.hasRealName" />
+                  <img :src="icUserAdd" class="cc-ic" alt="" /><span>检出真实姓名</span>
+                  <img :src="icSuccess" class="cc-check" alt="" />
+                </label>
+                <label class="aq-check-card" :class="{ on: row.checklist.hasContact }">
+                  <input type="checkbox" v-model="row.checklist.hasContact" />
+                  <img :src="icPhone" class="cc-ic" alt="" /><span>检出联系方式</span>
+                  <img :src="icSuccess" class="cc-check" alt="" />
+                </label>
+                <label class="aq-check-card" :class="{ on: row.checklist.hasLocatableCombo }">
+                  <input type="checkbox" v-model="row.checklist.hasLocatableCombo" />
+                  <img :src="icLocation" class="cc-ic" alt="" /><span>检出可反向定位信息组合</span>
+                  <img :src="icSuccess" class="cc-check" alt="" />
+                </label>
               </div>
             </div>
 
@@ -101,6 +124,10 @@ import icWarning from '../../assets/icons/status/warning.svg'
 import icLock from '../../assets/icons/status/lock.svg'
 import icVerified from '../../assets/icons/content/verified.svg'
 import icClose from '../../assets/icons/actions/close.svg'
+import icUserAdd from '../../assets/icons/actions/user-add.svg'
+import icPhone from '../../assets/icons/actions/phone.svg'
+import icLocation from '../../assets/icons/actions/location.svg'
+import { avatarFor } from '../../mock/demoData'
 
 const demo = useDemoStore()
 
@@ -251,13 +278,14 @@ async function onReject() {
   }
 }
 
+// 趋势文案为演示态展示（较昨日变化量），不参与真实统计口径
 const statTiles = computed(() => [
-  { label: '待审核合计', value: pendingTotal.value, icon: icDocument },
-  { label: '认证已通过', value: overview.value.authApprovedCount, icon: icSuccess },
-  { label: '认证已拒绝', value: overview.value.authRejectedCount, icon: icError },
-  { label: '知识候选待审核', value: overview.value.knowledgePendingCount, icon: icAnnouncement },
-  { label: '知识已发布', value: overview.value.knowledgePublishedCount, icon: icResources },
-  { label: '举报待处理', value: overview.value.reportPendingCount, icon: icWarning },
+  { label: '待审核合计', value: pendingTotal.value, icon: icDocument, color: 'blue', trend: '较昨日 +3', trendDir: 'up' },
+  { label: '认证已通过', value: overview.value.authApprovedCount, icon: icSuccess, color: 'green', trend: '较昨日 +5', trendDir: 'up' },
+  { label: '认证已拒绝', value: overview.value.authRejectedCount, icon: icError, color: 'red', trend: '较昨日 +1', trendDir: 'down' },
+  { label: '知识候选待审核', value: overview.value.knowledgePendingCount, icon: icAnnouncement, color: 'purple', trend: '较昨日 +2', trendDir: 'up' },
+  { label: '知识已发布', value: overview.value.knowledgePublishedCount, icon: icResources, color: 'cyan', trend: '较昨日 +8', trendDir: 'up' },
+  { label: '举报待处理', value: overview.value.reportPendingCount, icon: icWarning, color: 'orange', trend: '与昨日持平', trendDir: 'flat' },
 ])
 
 onMounted(() => {
@@ -271,9 +299,20 @@ onMounted(() => {
 
 .stat-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin: 22px 0; }
 .stat-tile { padding: 16px; display: flex; align-items: center; gap: 12px; }
-.st-icon { width: 30px; height: 30px; flex: none; }
-.st-main b { display: block; font-size: 20px; font-weight: 850; color: var(--xj-ink); line-height: 1.2; }
+.st-ic { width: 44px; height: 44px; border-radius: 12px; flex: none; display: grid; place-items: center; }
+.st-ic.blue { background: #EAF2FF; }
+.st-ic.green { background: #E9F9EF; }
+.st-ic.red { background: #FFF0EF; }
+.st-ic.purple { background: #F4ECFF; }
+.st-ic.cyan { background: #E8F7F4; }
+.st-ic.orange { background: #FFF5DE; }
+.st-icon { width: 24px; height: 24px; flex: none; }
+.st-main { min-width: 0; }
+.st-main b { display: block; font-size: 22px; font-weight: 850; color: var(--xj-ink); line-height: 1.2; }
 .st-main span { font-size: 11px; color: var(--xj-subtle); }
+.st-trend { display: block; margin-top: 4px; font-size: 10.5px; font-style: normal; color: var(--xj-subtle); }
+.st-trend.up { color: var(--xj-success); }
+.st-trend.down { color: var(--xj-danger); }
 
 .aq-filters { display: flex; flex-direction: column; gap: 4px; margin-bottom: 18px; }
 .aq-tabs { overflow-x: auto; scrollbar-width: none; }
@@ -281,14 +320,30 @@ onMounted(() => {
 
 .aq-list { display: flex; flex-direction: column; gap: 14px; }
 .aq-card { padding: 18px 20px; }
-.aq-top { display: flex; align-items: center; gap: 8px; }
-.aq-title { margin: 11px 0 6px; font-size: 15.5px; font-weight: 780; color: var(--xj-ink); line-height: 1.4; }
-.aq-meta { display: flex; align-items: center; gap: 14px; font-size: 12px; color: var(--xj-subtle); }
+.aq-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.aq-submitter { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.aq-avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; flex: none; box-shadow: 0 3px 10px rgba(8,20,38,.14); }
+.aq-sub-info { display: flex; flex-direction: column; min-width: 0; }
+.aq-sub-name { font-size: 12.5px; font-weight: 780; color: var(--xj-ink); }
+.aq-sub-time { font-size: 10.5px; color: var(--xj-subtle); }
+.aq-top { display: flex; align-items: center; gap: 8px; flex: none; }
+.aq-title { margin: 11px 0 0; font-size: 15.5px; font-weight: 780; color: var(--xj-ink); line-height: 1.4; }
 .aq-privacy { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--xj-line); display: flex; flex-direction: column; gap: 12px; }
-.aq-checklist { display: flex; flex-wrap: wrap; gap: 10px 22px; }
-.aq-check { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--xj-text); cursor: pointer; }
-.aq-check input { width: 15px; height: 15px; accent-color: var(--accent, var(--xj-blue)); cursor: pointer; }
-.aq-actions { display: flex; gap: 10px; margin-top: 15px; padding-top: 14px; border-top: 1px solid var(--xj-line); }
+.aq-toast-icwrap { width: 38px; height: 38px; border-radius: 11px; flex: none; display: grid; place-items: center; }
+.aq-toast-icwrap.success { background: #E9F9EF; }
+.aq-toast-icwrap.danger { background: #FFF0EF; }
+.aq-toast-icwrap .xj-toast-icon { width: 21px; height: 21px; }
+.aq-checklist { display: flex; flex-wrap: wrap; gap: 10px; }
+.aq-check-card { flex: 1 1 200px; display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 11px; border: 1.5px solid var(--xj-line-strong); background: var(--xj-soft); cursor: pointer; transition: all var(--xj-fast) var(--xj-ease); position: relative; }
+.aq-check-card:hover { border-color: #A7C8FF; }
+.aq-check-card input { position: absolute; width: 0; height: 0; opacity: 0; }
+.aq-check-card .cc-ic { width: 18px; height: 18px; flex: none; }
+.aq-check-card span { font-size: 12px; font-weight: 650; color: var(--xj-text); line-height: 1.35; }
+.aq-check-card .cc-check { width: 15px; height: 15px; margin-left: auto; flex: none; opacity: 0; transform: scale(.6); transition: all var(--xj-fast) var(--xj-ease); }
+.aq-check-card.on { border-color: #8FDEAD; background: #EAFBF0; }
+.aq-check-card.on span { color: var(--xj-green-deep); font-weight: 750; }
+.aq-check-card.on .cc-check { opacity: 1; transform: scale(1); }
+.aq-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; padding-top: 14px; border-top: 1px solid var(--xj-line); }
 .ic { width: 15px; height: 15px; flex: none; }
 
 :deep(.el-dialog) { border-radius: 16px; font-family: var(--xj-font); }

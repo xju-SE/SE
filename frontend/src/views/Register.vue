@@ -5,7 +5,7 @@
     <div class="reg-veil"></div>
 
     <div class="reg-card" role="dialog" aria-label="注册">
-      <div class="rc-brand"><XLogo variant="lockup" :size="30" /></div>
+      <div class="rc-brand" style="display:flex;justify-content:center;width:100%"><XLogo variant="full" :size="46" :show-tagline="false" /></div>
       <h2 class="rc-title">创建你的账号</h2>
       <p class="rc-sub">加入 XJOURNEY，开启你的成长导航</p>
 

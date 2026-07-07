@@ -209,7 +209,7 @@ import { helpApi, tagApi } from '../api'
 import XLoader from '../components/XLoader.vue'
 import PageHero from '../components/PageHero.vue'
 import notFoundImg from '../assets/states/no-results.svg'
-import heroBg from '../assets/bg/生活圈背景.png'
+import heroBg from '../assets/bg/学业圈帖子背景.png'
 // UI Kit 正式图标（彩色 SVG，作为 <img> 使用）
 import icInfo from '../assets/icons/status/info.svg'
 import icWarning from '../assets/icons/status/warning.svg'

@@ -8,7 +8,7 @@
       <div class="right-slogan">Growth Navigation for Every Journey</div>
 
       <div class="login-card" role="dialog" aria-label="登录">
-        <div class="lc-brand"><XLogo variant="lockup" :size="30" /></div>
+        <div class="lc-brand"><XLogo variant="full" :size="46" :show-tagline="false" /></div>
         <h2 class="lc-title">欢迎登录</h2>
         <p class="lc-sub">连接校园，导航每一步成长</p>
 
@@ -53,7 +53,7 @@
     <!-- 会移动的品牌 Logo（idle 居中可点击 → 转场后停在左上） -->
     <div class="brand-logo" :class="{ clickable: !started }" tabindex="0" role="button" aria-label="进入 XJOURNEY"
       @click="start" @keydown.enter="start" @keydown.space.prevent="start">
-      <XLogo variant="full" :size="started ? 40 : 74" />
+      <XLogo variant="full" :size="started ? 62 : 128" />
       <div v-if="!started" class="enter-hint">点击进入</div>
     </div>
   </div>
@@ -152,7 +152,8 @@ const XLoaderInline = () => h('span', { class: 'lc-spinner' })
 .started .login-card { opacity: 1; transform: translateY(-50%) translateX(0); }
 .login-card :is(input, button) { pointer-events: none; }
 .ready .login-card :is(input, button) { pointer-events: auto; }
-.lc-brand { display: flex; justify-content: center; margin-bottom: 14px; }
+.lc-brand { display: flex; justify-content: center; align-items: center; width: 100%; margin: 2px 0 16px; }
+.lc-brand :deep(.xlogo) { margin: 0 auto; }
 .lc-title { margin: 0; text-align: center; font-size: 22px; font-weight: 850; color: var(--xj-ink); }
 .lc-sub { margin: 6px 0 18px; text-align: center; font-size: 12.5px; color: var(--xj-subtle); }
 .role-switch { display: flex; background: var(--xj-soft); border: 1px solid var(--xj-line); border-radius: 10px; padding: 4px; margin-bottom: 18px; }
@@ -171,7 +172,7 @@ const XLoaderInline = () => h('span', { class: 'lc-spinner' })
 
 /* 左侧介绍 */
 .stage-left { position: absolute; inset: 0; display: flex; align-items: center; padding-left: 8%; }
-.intro-block { max-width: 460px; opacity: 0; transform: translateY(16px); transition: opacity .5s ease .35s, transform .5s var(--xj-ease) .35s; }
+.intro-block { max-width: 400px; opacity: 0; transform: translateY(16px); transition: opacity .5s ease .35s, transform .5s var(--xj-ease) .35s; }
 .started .intro-block { opacity: 1; transform: translateY(0); }
 .intro-title { font-size: 46px; line-height: 1.16; font-weight: 850; color: var(--xj-ink); margin: 0; letter-spacing: 1px; }
 .intro-title .grad { background: linear-gradient(100deg, #22C55E, #04BFA5 45%, #2563EB); -webkit-background-clip: text; background-clip: text; color: transparent; }

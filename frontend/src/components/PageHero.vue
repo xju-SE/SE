@@ -36,8 +36,8 @@ withDefaults(defineProps<{
 .page-hero.low { min-height: 150px; }
 .ph-bg { position: absolute; inset: 0; background-size: cover; background-position: center right; }
 .ph-mask { position: absolute; inset: 0; }
-.page-hero.life .ph-mask { background: linear-gradient(95deg, rgba(16,140,74,.93) 0%, rgba(34,197,94,.68) 34%, rgba(4,191,165,.28) 62%, rgba(255,255,255,.02) 100%); }
-.page-hero.study .ph-mask { background: linear-gradient(95deg, rgba(23,72,183,.93) 0%, rgba(37,99,235,.66) 34%, rgba(47,125,246,.26) 62%, rgba(255,255,255,.02) 100%); }
+.page-hero.life .ph-mask { background: linear-gradient(95deg, rgba(16,140,74,.88) 0%, rgba(34,197,94,.52) 30%, rgba(4,191,165,.14) 54%, rgba(255,255,255,0) 78%); }
+.page-hero.study .ph-mask { background: linear-gradient(95deg, rgba(23,72,183,.88) 0%, rgba(37,99,235,.5) 30%, rgba(47,125,246,.12) 54%, rgba(255,255,255,0) 78%); }
 .ph-inner { position: relative; z-index: 2; width: 100%; padding-top: 22px; padding-bottom: 22px; }
 .ph-crumbs { font-size: 12.5px; opacity: .92; margin-bottom: 10px; display: flex; align-items: center; gap: 7px; }
 .ph-crumbs .sep { opacity: .7; }

@@ -1,5 +1,30 @@
 <template>
-  <div class="dash">
+  <!-- ===== 双圈首页 · 总入口（无 scene 时，对照素材"双圈首页"双入口结构） ===== -->
+  <div v-if="!sceneChosen" class="gate">
+    <div class="gate-panel life" :style="{ backgroundImage: `url(${gateLife})` }" @click="enter('life')">
+      <div class="gp-mask"></div>
+      <div class="gp-body">
+        <h2 class="gp-title">生活圈</h2>
+        <p class="gp-sub">发现校园生活，连接身边的人</p>
+        <div class="gp-chips"><span>生活经验</span><span>活动机会</span><span>兴趣同好</span></div>
+        <button class="gp-btn">进入生活圈 <img :src="icArrow" alt="" /></button>
+      </div>
+    </div>
+    <div class="gate-mark"><img :src="markUrl" alt="XJOURNEY" /></div>
+    <div class="gate-panel study" :style="{ backgroundImage: `url(${gateStudy})` }" @click="enter('study')">
+      <div class="gp-mask"></div>
+      <div class="gp-body">
+        <h2 class="gp-title">学业圈</h2>
+        <p class="gp-sub">共享学习资源，记录成长轨迹</p>
+        <div class="gp-chips"><span>经验知识库</span><span>结构化求助</span><span>成长时间线</span></div>
+        <button class="gp-btn">进入学业圈 <img :src="icArrow" alt="" /></button>
+      </div>
+    </div>
+    <div class="gate-welcome">欢迎回来，{{ me.username }} · 今天想从哪个圈开始？</div>
+  </div>
+
+  <!-- ===== 圈内信息流（选圈后） ===== -->
+  <div v-else class="dash">
     <!-- 英雄横幅 -->
     <section class="circle-hero">
       <div class="hero-bg" :style="{ backgroundImage: `url(${heroBg})` }"></div>
@@ -146,8 +171,12 @@ import {
   demoRecoLife, demoRecoStudy, demoTagsLife, demoTagsStudy, demoNotifications, demoMe,
 } from '../mock/demoData'
 import { knowledgeApi, helpApi } from '../api'
-import bgLife from '../assets/bg/双圈首页生活圈背景.png'
-import bgStudy from '../assets/bg/双圈首页学业圈背景.png'
+import bgLife from '../assets/bg/生活圈背景.png'
+import bgStudy from '../assets/bg/学业圈首页背景.png'
+import gateLife from '../assets/bg/双圈首页生活圈背景.png'
+import gateStudy from '../assets/bg/双圈首页学业圈背景.png'
+import markUrl from '../assets/brand/mark.svg'
+import icArrow from '../assets/icons/actions/arrow-right.svg'
 // UI Kit 正式图标（<img> 引用，替换全部手绘内联 svg）
 import icPlus from '../assets/icons/actions/plus.svg'
 import icComment from '../assets/icons/actions/comment.svg'
@@ -166,7 +195,11 @@ const router = useRouter()
 const demo = useDemoStore()
 const auth = useAuthStore()
 
+const sceneChosen = computed(() => !!route.query.scene)
 const isLife = computed(() => route.query.scene !== 'study')
+function enter(s: 'life' | 'study') {
+  router.push({ path: '/dashboard', query: { scene: s } })
+}
 const heroBg = computed(() => (isLife.value ? bgLife : bgStudy))
 const me = computed(() => ({ username: auth.user?.username || demoMe.username, grade: demoMe.grade, major: demoMe.major }))
 const meAvatar = computed(() => avatarFor(me.value.username, 9))
@@ -243,4 +276,38 @@ const viewsOf = (p: any) => p.views ?? p.a * 7 + p.b
 .noti-ic { width: 26px; height: 26px; flex: none; margin-top: 2px; }
 /* 连续进度勾选：CSS 描边对勾（替换手绘 svg），生活/学业圈各自品牌色 */
 .streak-dot.done::after { content: ""; width: 6px; height: 11px; border: solid #fff; border-width: 0 3px 3px 0; transform: rotate(45deg); margin-top: -2px; }
+
+/* ===== 双圈首页 · 总入口 ===== */
+.gate { position: relative; display: flex; min-height: calc(100vh - 64px); overflow: hidden; }
+.gate-panel { position: relative; flex: 1; background-size: cover; background-position: center; cursor: pointer; display: flex; align-items: flex-end;
+  transition: flex 0.55s cubic-bezier(.22,.8,.2,1); }
+.gate:hover .gate-panel { flex: 0.82; }
+.gate .gate-panel:hover { flex: 1.5; }
+.gp-mask { position: absolute; inset: 0; transition: opacity .4s; }
+.gate-panel.life .gp-mask { background: linear-gradient(185deg, rgba(16,140,74,.06) 30%, rgba(12,110,60,.78) 100%); }
+.gate-panel.study .gp-mask { background: linear-gradient(185deg, rgba(23,72,183,.06) 30%, rgba(18,52,130,.8) 100%); }
+.gate-panel:hover .gp-mask { opacity: .88; }
+.gp-body { position: relative; z-index: 2; padding: 0 8% 9vh; color: #fff; }
+.gp-title { margin: 0; font-size: clamp(38px, 4.6vw, 58px); font-weight: 850; letter-spacing: 6px; text-shadow: 0 4px 26px rgba(8,20,38,.35); }
+.gp-sub { margin: 12px 0 18px; font-size: 16.5px; opacity: .96; font-weight: 500; }
+.gp-chips { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 24px; }
+.gp-chips span { height: 30px; padding: 0 14px; display: inline-flex; align-items: center; border-radius: 999px; font-size: 12.5px; font-weight: 650;
+  background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.45); backdrop-filter: blur(3px); }
+.gp-btn { height: 46px; padding: 0 24px; border: 0; border-radius: 12px; background: #fff; font-size: 14.5px; font-weight: 800; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 9px; transition: transform .2s var(--xj-ease), box-shadow .2s; box-shadow: 0 10px 28px rgba(8,20,38,.25); }
+.gate-panel.life .gp-btn { color: var(--xj-green-deep); }
+.gate-panel.study .gp-btn { color: var(--xj-blue-deep); }
+.gp-btn img { width: 16px; height: 16px; }
+.gate-panel:hover .gp-btn { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(8,20,38,.35); }
+.gate-mark { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 5; width: 86px; height: 86px; border-radius: 50%;
+  background: #fff; box-shadow: 0 14px 44px rgba(8,20,38,.28); display: grid; place-items: center; pointer-events: none; }
+.gate-mark img { width: 46px; height: 46px; }
+.gate-welcome { position: absolute; top: 26px; left: 50%; transform: translateX(-50%); z-index: 5; color: #fff; font-size: 13.5px; font-weight: 650;
+  padding: 9px 22px; border-radius: 999px; background: rgba(8,20,38,.34); backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,.25); white-space: nowrap; }
+@media (max-width: 900px) {
+  .gate { flex-direction: column; }
+  .gate:hover .gate-panel, .gate .gate-panel:hover { flex: 1; }
+  .gate-mark { display: none; }
+  .gp-body { padding: 0 7% 7vh; }
+}
 </style>

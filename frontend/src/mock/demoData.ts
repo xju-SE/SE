@@ -41,6 +41,8 @@ export const demoStudyFeed: DemoPost[] = [
   { id: 12, author: '小雨学姐', grade: '研究生', tag: '考研经验', time: '5小时前', source: '知识库', title: '机器学习导论 笔记整理（持续更新中）', excerpt: '吴恩达课程笔记整理，包含线性回归、逻辑回归、神经网络等核心内容，附公式推导和个人理解，欢迎交流～', images: [IMGS[1], IMGS[2]], a: 76, b: 18, avatarIdx: 6 },
   { id: 13, author: '求助-李同学', grade: '大三', tag: '结构化求助', time: '昨天 16:20', source: '求助单·进行中', title: '想转专业到计科，课程衔接和考试要求有学长了解吗？', excerpt: '目前大二，GPA 3.6，想转到计算机科学与技术。请问转专业的考核科目、时间节点和需要提前补的课有哪些？', images: [], a: 3, b: 12, avatarIdx: 7 },
   { id: 14, author: '数学建模小土豆', grade: '大三', tag: '竞赛经验', time: '昨天 10:11', source: '知识库', title: '2024 美赛 M 奖经验分享与备赛建议', excerpt: '从选题思路、建模方法到论文写作，分享我们的参赛经验和避坑指南，希望帮到今年参赛的同学。', images: [IMGS[2], IMGS[3]], a: 54, b: 15, avatarIdx: 0 },
+  { id: 15, author: '陈学长', grade: '大四', tag: '课程资料', time: '前天 14:30', source: '知识库', title: '操作系统进程管理详解（含思维导图）', excerpt: '整理了进程/线程、调度算法、死锁、同步互斥的核心考点与高频题型，附思维导图与典型例题解析。', images: [IMGS[5]], a: 63, b: 11, avatarIdx: 2 },
+  { id: 16, author: '算法小王子', grade: '大三', tag: '课程资料', time: '3天前', source: '知识库', title: 'C 语言常用算法代码模板合集', excerpt: '排序、查找、链表、树、图的可直接套用代码模板，均已在 VS Code 与 Dev-C++ 中测试通过。', images: [IMGS[1]], a: 87, b: 19, avatarIdx: 4 },
 ]
 
 // 右栏：热门（生活=活动机会 / 学业=资源机会），均映射后端 opportunity

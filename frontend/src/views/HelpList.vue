@@ -12,17 +12,17 @@
     <div class="container help-container">
       <div v-if="statCard" class="xj-card help-stats">
         <div class="hs-item">
-          <img :src="icComment" class="hs-icon" />
+          <span class="hs-ic-tile blue"><img :src="icComment" class="hs-icon" /></span>
           <b>{{ statCard.openCount ?? '-' }}</b><span>待解决</span>
         </div>
         <div class="hs-sep"></div>
         <div class="hs-item">
-          <img :src="icSuccess" class="hs-icon" />
+          <span class="hs-ic-tile green"><img :src="icSuccess" class="hs-icon" /></span>
           <b>{{ statCard.resolvedCount ?? '-' }}</b><span>已解决</span>
         </div>
         <div class="hs-sep"></div>
         <div class="hs-item">
-          <img :src="icClock" class="hs-icon" />
+          <span class="hs-ic-tile orange"><img :src="icClock" class="hs-icon" /></span>
           <b>{{ formatHours(statCard.avgResponseHours) }}</b><span>平均响应时长</span>
         </div>
       </div>
@@ -35,6 +35,7 @@
           >{{ t.label }}</button>
         </div>
         <div class="feed-sort" @click="cycleSort">
+          <img :src="icSort" class="ic" />
           {{ sortLabel }}
           <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6" /></svg>
         </div>
@@ -44,10 +45,12 @@
       <template v-else>
         <div v-if="displayTickets.length" class="feed-list">
           <article v-for="t in displayTickets" :key="t.id" class="xj-card feed-card study">
+            <span class="fc-status-bar" :class="statusBarClass(t.status)"></span>
             <div class="fc-head">
               <img class="xj-avatar" :src="avatarFor(t.askerName, t.avatarIdx ?? t.id)" alt="" />
               <div class="fc-author">
                 <div class="a-name">{{ t.askerName || '匿名求助人' }}</div>
+                <div class="a-sub">{{ tagName(t.majorTagId) }} · {{ gradeLabel(t.gradeLevel) || '在读' }}</div>
                 <div class="a-meta"><span>{{ t.createdAt || '' }}</span><span>· {{ tagName(t.questionTypeTagId) }}</span></div>
               </div>
               <span class="xj-badge" :class="statusMeta(t.status).badge">{{ statusMeta(t.status).label }}</span>
@@ -61,7 +64,9 @@
             </div>
             <div class="fc-actions">
               <span class="fc-act"><img :src="icComment" class="ic" /> {{ t.answerCount ?? 0 }} 回答 · {{ t.followupCount ?? 0 }} 追问</span>
-              <span class="fc-act" @click="router.push('/help/' + t.id)"><img :src="icLink" class="ic" /> 查看详情</span>
+              <button class="fc-answer-btn" type="button" @click="router.push('/help/' + t.id)">
+                <img :src="icComment" class="ic" /> 去回答
+              </button>
             </div>
           </article>
         </div>
@@ -90,7 +95,7 @@ import icPlus from '../assets/icons/actions/plus.svg'
 import icComment from '../assets/icons/actions/comment.svg'
 import icClock from '../assets/icons/actions/clock.svg'
 import icSuccess from '../assets/icons/status/success.svg'
-import icLink from '../assets/icons/actions/link.svg'
+import icSort from '../assets/icons/actions/sort.svg'
 
 const router = useRouter()
 const demo = useDemoStore()
@@ -140,6 +145,13 @@ const STATUS_META: Record<string, { label: string; badge: string }> = {
 }
 function statusMeta(status: string) {
   return STATUS_META[status] || { label: status || '进行中', badge: 'info' }
+}
+// 卡片左侧状态色条：进行中=蓝 / 已采纳=绿 / 已关闭=灰（仅视觉分组，复用 statusMeta 的三档展示口径）
+function statusBarClass(status: string) {
+  const label = statusMeta(status).label
+  if (label === '已采纳') return 'adopted'
+  if (label === '已关闭') return 'closed'
+  return 'progress'
 }
 
 const statusTabs = [
@@ -222,13 +234,37 @@ onMounted(() => {
 
 .help-stats { display: flex; align-items: center; padding: 18px 24px; margin-bottom: 20px; }
 .hs-item { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; }
-.hs-icon { width: 26px; height: 26px; margin-bottom: 8px; }
+.hs-ic-tile { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; margin-bottom: 8px; }
+.hs-ic-tile.blue { background: #EAF2FF; }
+.hs-ic-tile.green { background: #E9F9EF; }
+.hs-ic-tile.orange { background: #FFF5DE; }
+.hs-icon { width: 22px; height: 22px; }
 .hs-item b { display: block; font-size: 22px; font-weight: 850; color: var(--xj-ink); }
 .hs-item span { display: block; font-size: 12px; color: var(--xj-subtle); margin-top: 4px; }
 .hs-sep { width: 1px; height: 46px; background: var(--xj-line); }
 
+.feed-sort .ic { width: 14px; height: 14px; }
+
+/* 卡片左侧状态色条 */
+.feed-card { position: relative; padding-left: 26px; overflow: hidden; }
+.fc-status-bar { position: absolute; left: 0; top: 10px; bottom: 10px; width: 4px; border-radius: 3px; }
+.fc-status-bar.progress { background: var(--xj-blue); }
+.fc-status-bar.adopted { background: var(--xj-green); }
+.fc-status-bar.closed { background: #B7C2D0; }
+
+/* 作者行：专业 · 年级 次行 */
+.a-sub { font-size: 11.5px; color: var(--xj-muted); margin-top: 2px; font-weight: 600; }
+
+.fc-actions { justify-content: space-between; }
 .fc-act { display: flex; align-items: center; gap: 6px; }
 .fc-act .ic { width: 16px; height: 16px; }
+
+/* 卡右下"去回答" ghost 按钮 */
+.fc-answer-btn { height: 28px; padding: 0 13px; border-radius: 999px; border: 1px solid #D0E1FF; background: #F5F9FF;
+  color: var(--xj-blue-deep); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;
+  cursor: pointer; transition: all var(--xj-fast); flex: none; }
+.fc-answer-btn:hover { background: #EAF2FF; border-color: #A7C8FF; transform: translateY(-1px); }
+.fc-answer-btn .ic { width: 14px; height: 14px; }
 
 @media (max-width: 720px) {
   .help-stats { flex-direction: column; gap: 14px; }

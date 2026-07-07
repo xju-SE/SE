@@ -30,57 +30,84 @@
           <div class="ps-text">暂无时间线节点</div>
           <div class="ps-sub">切换路线试试，或稍后再来看看</div>
         </div>
-        <template v-else>
-          <div class="tl-progress">
-            <div class="tl-progress-head">
-              <span>成长进度</span>
-              <b>{{ overall.doneNodes }} / {{ overall.totalNodes }} · {{ overall.percentage }}%</b>
+        <div v-else class="tl-layout">
+          <!-- 左栏：路线概览侧栏卡 -->
+          <aside class="tl-side">
+            <div class="xj-card study tl-side-card">
+              <div class="tl-side-label">当前路线</div>
+              <div class="tl-side-route">{{ currentRouteLabel }}</div>
+              <div class="tl-ring-wrap">
+                <svg class="tl-ring" viewBox="0 0 100 100">
+                  <circle class="tl-ring-bg" cx="50" cy="50" r="42" />
+                  <circle class="tl-ring-fg" cx="50" cy="50" r="42" :style="{ strokeDasharray: ringDashArray }" />
+                </svg>
+                <div class="tl-ring-text"><b>{{ overall.percentage }}%</b><span>总进度</span></div>
+              </div>
+              <div class="tl-side-stage">阶段完成 <b>{{ stageProgress.done }}</b> / {{ stageProgress.total }}</div>
+              <div class="tl-side-hint">如需调整发展方向，可在上方切换路线</div>
             </div>
-            <div class="tl-progress-track"><div class="tl-progress-fill" :style="{ width: overall.percentage + '%' }"></div></div>
-          </div>
+          </aside>
 
-          <el-timeline>
-            <el-timeline-item
-              v-for="node in nodes" :key="node.id"
-              :timestamp="node.stageLabel"
-              placement="top"
-              :type="itemType(node)"
-              :color="isOverdue(node) ? '#EF4444' : undefined"
-            >
-              <div class="xj-card study tl-card" :class="{ overdue: isOverdue(node) }">
-                <div class="tl-top">
-                  <h3 class="tl-title" :class="{ overdue: isOverdue(node) }">{{ node.title }}</h3>
-                  <span class="xj-badge" :class="importanceBadge(node.importance)">{{ importanceLabel(node.importance) }}</span>
-                  <span v-if="node.progressStatus === 'DONE'" class="xj-badge success">已完成</span>
-                </div>
-                <div class="tl-meta"><img :src="icCalendar" class="ic" alt="" />建议时间 · {{ node.suggestedTime || '未设定' }}</div>
+          <!-- 右栏：进度条 + 时间线 -->
+          <div class="tl-main">
+            <div class="tl-progress">
+              <div class="tl-progress-head">
+                <span>成长进度</span>
+                <b>{{ overall.doneNodes }} / {{ overall.totalNodes }} · {{ overall.percentage }}%</b>
+              </div>
+              <div class="tl-progress-track"><div class="tl-progress-fill" :style="{ width: overall.percentage + '%' }"></div></div>
+            </div>
 
-                <div v-if="isOverdue(node)" class="xj-toast danger tl-toast">
-                  <img :src="icWarning" class="xj-toast-icon" alt="" />
-                  <div>
-                    <div class="xj-toast-title">已逾期</div>
-                    <div class="xj-toast-desc">补救优先级：{{ remediationLabel(node) }}，建议尽快跟进</div>
+            <el-timeline>
+              <el-timeline-item
+                v-for="(node, i) in nodes" :key="node.id"
+                :timestamp="node.stageLabel"
+                placement="top"
+                :type="itemType(node)"
+                :color="isOverdue(node) ? '#EF4444' : undefined"
+                :class="nodeStateClass(node)"
+              >
+                <div class="xj-card study tl-card" :class="{ overdue: isOverdue(node) }">
+                  <div class="tl-top">
+                    <h3 class="tl-title" :class="{ overdue: isOverdue(node) }">{{ node.title }}</h3>
+                    <span class="xj-badge" :class="importanceBadge(node.importance)">{{ importanceLabel(node.importance) }}</span>
+                    <span v-if="node.progressStatus === 'DONE'" class="xj-badge success">已完成</span>
+                  </div>
+                  <div class="tl-meta"><img :src="icCalendar" class="ic" alt="" />建议时间 · {{ node.suggestedTime || '未设定' }}</div>
+
+                  <div class="tl-resources" @click="onResourceHint">
+                    <img :src="icDocument" class="ic" alt="" />
+                    <span>关联资源 · {{ resourceHint(i) }}</span>
+                    <img :src="icArrowRight" class="ic-arrow" alt="" />
+                  </div>
+
+                  <div v-if="isOverdue(node)" class="xj-toast danger tl-toast">
+                    <img :src="icWarning" class="xj-toast-icon" alt="" />
+                    <div>
+                      <div class="xj-toast-title">已逾期</div>
+                      <div class="xj-toast-desc">补救优先级：{{ remediationLabel(node) }}，建议尽快跟进</div>
+                    </div>
+                  </div>
+
+                  <div v-if="node.progressStatus !== 'DONE'" class="tl-actions">
+                    <button
+                      class="xj-btn study sm"
+                      :disabled="markingId === node.id"
+                      @click="markDone(node)"
+                    ><img :src="icSuccess" class="ic" alt="" />{{ markingId === node.id ? '提交中…' : '标记完成' }}</button>
                   </div>
                 </div>
-
-                <div v-if="node.progressStatus !== 'DONE'" class="tl-actions">
-                  <button
-                    class="xj-btn study sm"
-                    :disabled="markingId === node.id"
-                    @click="markDone(node)"
-                  ><img :src="icSuccess" class="ic" alt="" />{{ markingId === node.id ? '提交中…' : '标记完成' }}</button>
-                </div>
-              </div>
-            </el-timeline-item>
-          </el-timeline>
-        </template>
+              </el-timeline-item>
+            </el-timeline>
+          </div>
+        </div>
       </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useDemoStore, loadOr } from '../store/demo'
 import { demoExperiences } from '../mock/demoData'
@@ -92,6 +119,8 @@ import heroBg from '../assets/bg/学业圈首页背景.png'
 import icCalendar from '../assets/icons/actions/calendar.svg'
 import icWarning from '../assets/icons/status/warning.svg'
 import icSuccess from '../assets/icons/status/success.svg'
+import icDocument from '../assets/icons/content/document.svg'
+import icArrowRight from '../assets/icons/actions/arrow-right.svg'
 
 const demo = useDemoStore()
 
@@ -111,6 +140,40 @@ const nodes = ref<any[]>([])
 const loading = ref(false)
 const switching = ref(false)
 const markingId = ref<number | null>(null)
+
+// 路线概览侧栏卡：当前路线名 / 圆环进度 / 阶段完成数（均由真实 nodes/overall 派生，非硬编码）
+const currentRouteLabel = computed(() => ROUTES.find((r) => r.value === routeType.value)?.label || '未决策')
+const RING_R = 42
+const RING_C = 2 * Math.PI * RING_R
+const ringDashArray = computed(() => {
+  const filled = (overall.value.percentage / 100) * RING_C
+  return `${filled.toFixed(1)} ${(RING_C - filled).toFixed(1)}`
+})
+const stageProgress = computed(() => {
+  const byStage = new Map<string, boolean[]>()
+  nodes.value.forEach((n) => {
+    const key = n.stageLabel || '未分组'
+    if (!byStage.has(key)) byStage.set(key, [])
+    byStage.get(key)!.push(n.progressStatus === 'DONE')
+  })
+  let done = 0
+  byStage.forEach((arr) => { if (arr.length && arr.every(Boolean)) done++ })
+  return { done, total: byStage.size }
+})
+
+// 时间轴圆点内嵌状态 icon（CSS ::after 背景图，v-bind 需绑定完整 url() 值，避免 url(var(...)) 兼容性问题）
+const doneIconBg = computed(() => `url(${icSuccess})`)
+const overdueIconBg = computed(() => `url(${icWarning})`)
+
+// 节点卡"关联资源"行：演示视觉数据，纯展示不接后端
+const RESOURCE_HINTS = ['3份资料 · 2条经验', '5份资料 · 1条经验', '2份资料 · 3条经验', '4份资料 · 2条经验']
+function resourceHint(i: number) { return RESOURCE_HINTS[i % RESOURCE_HINTS.length] }
+function onResourceHint() { ElMessage.info('关联资源清单整理中，敬请期待') }
+function nodeStateClass(node: any) {
+  if (node.progressStatus === 'DONE') return 'tl-item-done'
+  if (isOverdue(node)) return 'tl-item-overdue'
+  return 'tl-item-pending'
+}
 
 function isOverdue(node: any) {
   return !!node.overdue && node.progressStatus !== 'DONE'
@@ -237,6 +300,25 @@ onMounted(load)
 .route-seg-item:disabled { cursor: not-allowed; opacity: .55; }
 .route-seg-item.active:disabled { opacity: 1; }
 
+/* ---------- 两栏布局：左路线概览 + 右进度/时间线 ---------- */
+.tl-layout { display: grid; grid-template-columns: 270px 1fr; gap: 22px; align-items: start; }
+.tl-side { position: sticky; top: 86px; }
+.tl-side-card { padding: 20px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 4px; }
+.tl-side-label { font-size: 12px; color: var(--xj-subtle); font-weight: 650; }
+.tl-side-route { font-size: 17px; font-weight: 850; color: var(--xj-ink); margin-bottom: 8px; }
+.tl-ring-wrap { position: relative; width: 128px; height: 128px; margin: 4px 0 10px; }
+.tl-ring { width: 100%; height: 100%; transform: rotate(-90deg); transform-origin: 50% 50%; }
+.tl-ring-bg, .tl-ring-fg { fill: none; stroke-width: 8; }
+.tl-ring-bg { stroke: var(--xj-soft); }
+.tl-ring-fg { stroke: var(--xj-blue); stroke-linecap: round; transition: stroke-dasharray .4s var(--xj-ease); }
+.tl-ring-text { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.tl-ring-text b { font-size: 24px; font-weight: 850; color: var(--xj-ink); line-height: 1; }
+.tl-ring-text span { font-size: 11px; color: var(--xj-subtle); }
+.tl-side-stage { font-size: 13px; color: var(--xj-muted); }
+.tl-side-stage b { color: var(--xj-blue); font-size: 15px; }
+.tl-side-hint { font-size: 11px; color: var(--xj-subtle); margin-top: 8px; line-height: 1.5; }
+.tl-main { min-width: 0; }
+
 .tl-progress { margin: 0 0 22px; }
 .tl-progress-head { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--xj-muted); margin-bottom: 8px; }
 .tl-progress-head b { color: var(--xj-ink); }
@@ -244,7 +326,7 @@ onMounted(load)
 .tl-progress-fill { height: 100%; background: linear-gradient(90deg, var(--xj-blue), var(--xj-blue-deep)); border-radius: 999px; transition: width .3s var(--xj-ease); }
 
 .tl-card { padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
-.tl-card.overdue { border-color: #FFD5D1; }
+.tl-card.overdue { border-color: #FFD5D1; border-left: 4px solid var(--xj-danger); padding-left: 15px; }
 .tl-top { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 .tl-title { margin: 0; font-size: 14.5px; font-weight: 780; color: var(--xj-ink); flex: 1; min-width: 0; }
 .tl-title.overdue { color: var(--xj-danger); }
@@ -254,6 +336,34 @@ onMounted(load)
 .tl-toast { margin-top: 2px; }
 .tl-actions { margin-top: 4px; display: flex; justify-content: flex-end; }
 
+/* 关联资源行 */
+.tl-resources { display: flex; align-items: center; gap: 7px; padding: 8px 10px; margin-top: 2px; background: var(--xj-soft); border: 1px solid var(--xj-line); border-radius: 9px; font-size: 12px; color: var(--xj-muted); cursor: pointer; transition: all var(--xj-fast); }
+.tl-resources:hover { border-color: var(--accent); color: var(--accent-deep); }
+.tl-resources .ic { width: 14px; height: 14px; flex: none; }
+.tl-resources span { flex: 1; }
+.tl-resources .ic-arrow { width: 12px; height: 12px; flex: none; opacity: .6; }
+
 :deep(.el-timeline-item__wrapper) { padding-left: 22px; }
 :deep(.el-timeline-item__tail) { border-left-color: var(--xj-line-strong); }
+
+/* 时间轴圆点加大：14px + 白边阴影；已完成/逾期叠加彩色状态 icon；未开始灰 */
+:deep(.el-timeline-item__node.el-timeline-item__node--normal) {
+  width: 14px; height: 14px; left: -2px;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(8, 20, 38, .18);
+}
+:deep(.el-timeline-item__node.el-timeline-item__node--primary) { background-color: var(--xj-neutral); }
+:deep(.tl-item-done .el-timeline-item__node)::after {
+  content: ''; width: 8px; height: 8px;
+  background-image: v-bind(doneIconBg); background-size: contain; background-position: center; background-repeat: no-repeat;
+}
+:deep(.tl-item-overdue .el-timeline-item__node)::after {
+  content: ''; width: 8px; height: 8px;
+  background-image: v-bind(overdueIconBg); background-size: contain; background-position: center; background-repeat: no-repeat;
+}
+
+@media (max-width: 900px) {
+  .tl-layout { grid-template-columns: 1fr; }
+  .tl-side { position: static; }
+}
 </style>
