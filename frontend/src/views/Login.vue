@@ -60,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted, h, nextTick } from 'vue'
+import { reactive, ref, onMounted, onBeforeUnmount, h, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '../store/auth'
@@ -85,10 +85,12 @@ const err = ref(false)
 const userRef = ref<HTMLInputElement>()
 const sceneBg = sceneBgGreen
 
+let autoStartTimer: ReturnType<typeof setTimeout> | null = null
 function start() {
   if (started.value) return
+  if (autoStartTimer) { clearTimeout(autoStartTimer); autoStartTimer = null }
   started.value = true
-  const delay = reduced.value ? 0 : 2400
+  const delay = reduced.value ? 0 : 1400
   setTimeout(async () => {
     ready.value = true
     await nextTick()
@@ -129,8 +131,12 @@ function onForgot() {
 onMounted(() => {
   reduced.value = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || false
   form.username = localStorage.getItem('lastUser') || ''
+  // 自动进入：短暂展示品牌开场后自动播放转场并解锁表单，用户无需点击也能登录；
+  // 点击 Logo 仍可立即触发（start 内会清掉该定时器）。
   if (reduced.value) start()
+  else autoStartTimer = setTimeout(start, 900)
 })
+onBeforeUnmount(() => { if (autoStartTimer) clearTimeout(autoStartTimer) })
 
 const XLoaderInline = () => h('span', { class: 'lc-spinner' })
 </script>
