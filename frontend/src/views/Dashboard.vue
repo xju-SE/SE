@@ -1,4 +1,6 @@
 <template>
+  <!-- 单根包装：本组件被 <transition> 包裹，顶层若是 注释+v-if/v-else 的多候选 fragment 会卡死 out-in 过渡（离场白屏） -->
+  <div class="dash-root">
   <!-- ===== 双圈首页 · 总入口（对照 进入首页.png：上方分屏 banner + 下方三卡片） ===== -->
   <div v-if="!sceneChosen" class="entry">
     <!-- 斜向分屏（对照 进入首页.png 的斜分割线），hover 时斜线整体平移扩展该侧 -->
@@ -217,6 +219,7 @@
       </div>
     </div>
   </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -257,9 +260,13 @@ const router = useRouter()
 const demo = useDemoStore()
 const auth = useAuthStore()
 
-const sceneChosen = computed(() => !!route.query.scene)
+// scene 状态冻结在 /dashboard 路由内：路由离开时 query 先清空，若直接依赖 query，
+// 本组件会在 leave 过渡期间翻转 v-if 分支导致根节点替换、out-in 过渡卡死（新页面不渲染）。
+const frozenScene = ref((route.query.scene as string) || '')
+watch(() => route.query.scene, (v) => { if (route.path === '/dashboard') frozenScene.value = (v as string) || '' })
+const sceneChosen = computed(() => !!frozenScene.value)
 const gateHov = ref('')
-const isLife = computed(() => route.query.scene !== 'study')
+const isLife = computed(() => frozenScene.value !== 'study')
 function enter(s: 'life' | 'study') {
   router.push({ path: '/dashboard', query: { scene: s } })
 }

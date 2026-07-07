@@ -140,10 +140,16 @@ const OPP_THUMBS = [bgStudyHome, heroBg, bgSearch, bgGrass]
 const ORG_SEQ = ['校学生会', '教务处', '计算机学院']
 const PUBLISH_SEQ = ['3天前', '1周前', '2天前', '5天前']
 const SIGNUP_SEQ = [23, 156, 42, 89, 67, 134]
+// 演示态：报名成功后按机会 id 记录本地增量，即时反映"已报名人数 +1"
+const signupBumps = ref<Record<number, number>>({})
 function oppThumb(i: number) { return OPP_THUMBS[i % OPP_THUMBS.length] }
 function orgName(i: number) { return ORG_SEQ[i % ORG_SEQ.length] }
 function publishTime(i: number) { return PUBLISH_SEQ[i % PUBLISH_SEQ.length] }
-function signupCount(i: number) { return SIGNUP_SEQ[i % SIGNUP_SEQ.length] }
+function signupCount(i: number) {
+  const o = opportunities.value[i]
+  const bump = o ? (signupBumps.value[o.id] || 0) : 0
+  return SIGNUP_SEQ[i % SIGNUP_SEQ.length] + bump
+}
 // 队伍成员头像叠（真实数据无成员名单，仅用队伍标识生成装饰性头像堆叠）
 function memberAvatars(t: any) {
   const n = Math.min(t.currentSize || 0, 3)
@@ -274,8 +280,16 @@ function switchMain(tab: 'opportunities' | 'teams') {
 async function signUp(o: any) {
   if (!canApply(o) || appliedIds.value.includes(o.id)) return
   applying.value = o.id
+  if (demo.enabled) {
+    await new Promise((r) => setTimeout(r, 400))
+    appliedIds.value.push(o.id)
+    signupBumps.value[o.id] = (signupBumps.value[o.id] || 0) + 1
+    ElMessage.success('报名成功（演示模式）')
+    applying.value = null
+    return
+  }
   try {
-    if (!demo.enabled) await opportunityApi.apply(o.id)
+    await opportunityApi.apply(o.id)
     appliedIds.value.push(o.id)
     ElMessage.success('报名成功')
   } catch {

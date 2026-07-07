@@ -217,6 +217,9 @@ const entry = ref<any>(null)
 const related = ref<any[]>([])
 const myFeedback = ref('')
 
+// 演示态：本地反馈计数增量（点击"有用/已过时/需更新"后 +1，仅用于演示态即时反映）
+const feedbackBonus = ref(0)
+
 // 静态演示派生数据（评价/收藏/贡献计数/标签/资源包体积）——写死演示，不臆造接口
 const demoMeta = computed(() => {
   const e = entry.value
@@ -224,7 +227,7 @@ const demoMeta = computed(() => {
   const seed = Number(e.id) || 1
   const vc = e.viewCount ?? 0
   return {
-    feedback: 8 + (seed * 7) % 34,
+    feedback: 8 + (seed * 7) % 34 + feedbackBonus.value,
     favorite: 12 + (seed * 5) % 60,
     contribKnow: 6 + (seed % 12),
     contribAdopt: 18 + (seed * 3) % 80,
@@ -283,6 +286,13 @@ async function loadRelated() {
 }
 
 async function feedback(type: 'USEFUL' | 'OUTDATED' | 'NEED_UPDATE') {
+  if (demo.enabled) {
+    await new Promise((r) => setTimeout(r, 400))
+    myFeedback.value = type
+    feedbackBonus.value += 1
+    ElMessage.success('评价已记录（演示模式）')
+    return
+  }
   try {
     // C46：路径 /feedbacks（复数）+ 请求体字段 feedbackType，枚举值 NEED_UPDATE（非 NEEDS_UPDATE）
     await knowledgeApi.feedback(id, type)

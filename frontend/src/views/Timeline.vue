@@ -373,6 +373,14 @@ async function onRoute(v: string) {
 
 async function markDone(node: any) {
   markingId.value = node.id
+  if (demo.enabled) {
+    await new Promise((r) => setTimeout(r, 400))
+    node.progressStatus = 'DONE'
+    overall.value = computeOverall(nodes.value)
+    ElMessage.success('已标记完成（演示模式）')
+    markingId.value = null
+    return
+  }
   try {
     await timelineApi.markProgress(node.id, 'DONE')
     ElMessage.success('已标记完成')

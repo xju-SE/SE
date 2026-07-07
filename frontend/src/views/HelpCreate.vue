@@ -118,6 +118,14 @@ async function onSubmit() {
     ElMessage.warning('请选择问题类型')
     return
   }
+  if (demo.enabled) {
+    submitting.value = true
+    await new Promise((r) => setTimeout(r, 400))
+    ElMessage.success('求助已发布（演示模式），系统将自动匹配校友')
+    submitting.value = false
+    router.push('/help')
+    return
+  }
   submitting.value = true
   try {
     const created: any = await helpApi.create(form)

@@ -229,8 +229,10 @@ function onStatusTab(v: string) { status.value = v; load() }
 
 async function onApprove(row: any) {
   if (demo.enabled) {
-    row.status = 'APPROVED'
+    await new Promise((r) => setTimeout(r, 400))
     countByType.value[row.targetType] = Math.max(0, (countByType.value[row.targetType] || 0) - 1)
+    const idx = tasks.value.findIndex((t) => t.id === row.id)
+    if (idx !== -1) tasks.value.splice(idx, 1)
     ElMessage.success('已通过（演示模式）')
     return
   }
@@ -258,10 +260,14 @@ async function onReject() {
     return
   }
   if (demo.enabled) {
-    rejectDialog.row.status = 'RETURNED'
+    rejectDialog.submitting = true
+    await new Promise((r) => setTimeout(r, 400))
     countByType.value[rejectDialog.row.targetType] = Math.max(0, (countByType.value[rejectDialog.row.targetType] || 0) - 1)
+    const idx = tasks.value.findIndex((t) => t.id === rejectDialog.row.id)
+    if (idx !== -1) tasks.value.splice(idx, 1)
     ElMessage.success('已退回（演示模式）')
     rejectDialog.visible = false
+    rejectDialog.submitting = false
     return
   }
   rejectDialog.submitting = true

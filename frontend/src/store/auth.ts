@@ -31,6 +31,12 @@ export const useAuthStore = defineStore('auth', {
       localStorage.setItem('refreshToken', data.refreshToken)
       await this.fetchMe()
     },
+    /** 演示模式登录：不触网，写入演示身份（管理员，保证全部页面含管理后台可演示） */
+    demoLogin(username?: string) {
+      this.token = 'demo-token'
+      localStorage.setItem('token', 'demo-token')
+      this.user = { userId: 1, username: username || '林一航', role: 'ADMIN', authStatus: 'VERIFIED' }
+    },
     async fetchMe() {
       this.user = (await authApi.me()) as UserInfo
     },

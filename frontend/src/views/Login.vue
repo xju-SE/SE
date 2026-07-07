@@ -64,12 +64,14 @@ import { reactive, ref, onMounted, h, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '../store/auth'
+import { useDemoStore } from '../store/demo'
 import XLogo from '../components/XLogo.vue'
 import sceneBgGreen from '../assets/bg/绿色雕塑背景.png'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
+const demo = useDemoStore()
 
 const started = ref(false)
 const ready = ref(false)
@@ -104,7 +106,14 @@ async function onSubmit() {
   err.value = false
   loading.value = true
   try {
-    await auth.login(form.username, form.password)
+    if (demo.enabled) {
+      // 演示模式：本地模拟登录成功，不触网（关闭演示模式后走真实后端）
+      await new Promise((r) => setTimeout(r, 500))
+      auth.demoLogin(form.username)
+      ElMessage.success('欢迎回来（演示模式）')
+    } else {
+      await auth.login(form.username, form.password)
+    }
     if (remember.value) localStorage.setItem('lastUser', form.username)
     router.push((route.query.redirect as string) || '/dashboard')
   } catch {

@@ -32,7 +32,7 @@
         <transition name="fade-pop">
           <div v-if="menuOpen" class="user-menu" @click.stop>
             <router-link to="/profile" class="um-item" @click="menuOpen = false">个人中心</router-link>
-            <router-link v-if="auth.isAdmin" to="/admin/audit" class="um-item" @click="menuOpen = false">管理后台</router-link>
+            <router-link v-if="auth.isAdmin || demo.enabled" to="/admin/audit" class="um-item" @click="menuOpen = false">管理后台</router-link>
             <div class="um-sep"></div>
             <div v-if="auth.isLogin" class="um-item danger" @click="logout">退出登录</div>
             <router-link v-else to="/login" class="um-item" @click="menuOpen = false">登录 / 注册</router-link>
@@ -47,8 +47,9 @@
 
     <main class="app-main">
       <router-view v-slot="{ Component }">
-        <transition name="page-fade" mode="out-in">
-          <component :is="Component" />
+        <transition name="page-fade" :duration="{ enter: 240, leave: 130 }">
+          <!-- 注意：被包裹的路由组件必须单根（见 Dashboard.vue dash-root 注释），multi-root fragment 会卡死 out-in -->
+          <component :is="Component" :key="route.path" />
         </transition>
       </router-view>
       <!-- 路由切换：品牌 X 加载转场（v10 动画） -->
@@ -65,7 +66,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../store/auth'
 import { useDemoStore } from '../store/demo'
 import { notificationApi } from '../api'
-import { avatarFor, demoMe } from '../mock/demoData'
+import { avatarFor, demoMe, demoNotifications } from '../mock/demoData'
 import XLogo from '../components/XLogo.vue'
 import icSearch from '../assets/icons/actions/search.svg'
 import icBell from '../assets/icons/actions/bell.svg'
@@ -98,6 +99,7 @@ const displayName = computed(() => auth.user?.username || (demo.enabled ? demoMe
 const avatar = computed(() => (auth.user as any)?.avatarUrl || avatarFor(displayName.value, 9))
 
 async function loadUnread() {
+  if (demo.enabled) { unread.value = demoNotifications.filter((n) => !n.read).length; return }
   if (!auth.isLogin) return
   try { unread.value = (await notificationApi.unreadCount()) as unknown as number } catch { unread.value = 0 }
 }
@@ -123,9 +125,11 @@ watch(() => auth.isLogin, loadUnread)
 .menu-backdrop { position: fixed; inset: 0; z-index: 40; }
 .fade-pop-enter-active, .fade-pop-leave-active { transition: opacity 0.14s, transform 0.14s; }
 .fade-pop-enter-from, .fade-pop-leave-to { opacity: 0; transform: translateY(-6px); }
+/* 并行过渡（不用 out-in：与页面离场期状态更新组合会死锁白屏）；离场页绝对定位脱离文档流防叠加跳动 */
+.app-main { position: relative; }
 .page-fade-enter-active { transition: opacity 0.22s var(--xj-ease), transform 0.22s var(--xj-ease); }
 .page-fade-enter-from { opacity: 0; transform: translateY(8px); }
-.page-fade-leave-active { transition: opacity 0.12s; }
+.page-fade-leave-active { transition: opacity 0.12s; position: absolute; inset: 0; z-index: 0; overflow: hidden; }
 .page-fade-leave-to { opacity: 0; }
 .nav-ic { width: 17px; height: 17px; opacity: .68; }
 .nav-ic.lg { width: 21px; height: 21px; }

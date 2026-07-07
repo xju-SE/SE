@@ -51,12 +51,14 @@ import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { authApi } from '../api'
+import { useDemoStore } from '../store/demo'
 import XLogo from '../components/XLogo.vue'
 import sceneBg from '../assets/bg/绿色雕塑背景.png'
 import icProfile from '../assets/icons/navigation/profile.svg'
 import icLock from '../assets/icons/status/lock.svg'
 
 const router = useRouter()
+const demo = useDemoStore()
 
 const form = reactive({ username: '', password: '', identityType: 'STUDENT' as 'STUDENT' | 'ALUMNI' })
 const confirmPassword = ref('')
@@ -76,14 +78,19 @@ async function onSubmit() {
   errField.value = ''
   loading.value = true
   try {
-    // FS3：后端 RegisterRequest 需要 confirmPassword + identityType（非 role）
-    await authApi.register({
-      username: form.username,
-      password: form.password,
-      confirmPassword: confirmPassword.value,
-      identityType: form.identityType,
-    })
-    ElMessage.success('注册成功，请登录')
+    if (demo.enabled) {
+      // 演示模式：本地模拟注册成功，不触网
+      await new Promise((r) => setTimeout(r, 500))
+    } else {
+      // FS3：后端 RegisterRequest 需要 confirmPassword + identityType（非 role）
+      await authApi.register({
+        username: form.username,
+        password: form.password,
+        confirmPassword: confirmPassword.value,
+        identityType: form.identityType,
+      })
+    }
+    ElMessage.success(demo.enabled ? '注册成功（演示模式），请登录' : '注册成功，请登录')
     router.push('/login')
   } catch {
     // 错误已由请求拦截器统一提示

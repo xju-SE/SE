@@ -383,6 +383,27 @@ async function onAnswer() {
     ElMessage.warning('请至少填写一条操作步骤（每行一步）')
     return
   }
+  if (demo.enabled) {
+    submittingAnswer.value = true
+    await new Promise((r) => setTimeout(r, 400))
+    if (!detail.value.answers) detail.value.answers = []
+    detail.value.answers.push({
+      id: Date.now(),
+      responderName: '我',
+      responderRole: 'STUDENT',
+      precondition: answerForm.precondition,
+      steps,
+      cautions: answerForm.cautions,
+      isAdopted: 0,
+      createdAt: '刚刚',
+    })
+    ElMessage.success('回答已提交（演示模式）')
+    answerForm.precondition = ''
+    answerForm.stepsText = ''
+    answerForm.cautions = ''
+    submittingAnswer.value = false
+    return
+  }
   submittingAnswer.value = true
   try {
     await helpApi.answer(id, {
@@ -407,6 +428,22 @@ async function onFollowup() {
     ElMessage.warning('请输入追问内容')
     return
   }
+  if (demo.enabled) {
+    submittingFollowup.value = true
+    await new Promise((r) => setTimeout(r, 400))
+    if (!detail.value.followups) detail.value.followups = []
+    detail.value.followups.push({
+      id: Date.now(),
+      fromUserName: '我',
+      isAsker: true,
+      content: followupForm.content,
+      createdAt: '刚刚',
+    })
+    ElMessage.success('追问已提交（演示模式）')
+    followupForm.content = ''
+    submittingFollowup.value = false
+    return
+  }
   submittingFollowup.value = true
   try {
     await helpApi.followup(id, followupForm.content)
@@ -421,6 +458,13 @@ async function onFollowup() {
 }
 
 async function onAdopt(ans: any) {
+  if (demo.enabled) {
+    await new Promise((r) => setTimeout(r, 400))
+    ;(detail.value.answers || []).forEach((a: any) => { a.isAdopted = a.id === ans.id ? 1 : 0 })
+    if (detail.value.ticket) detail.value.ticket.status = 'ADOPTED'
+    ElMessage.success('已采纳该回答（演示模式）')
+    return
+  }
   try {
     // FS7：真实端点 PATCH /help-answers/{answerId}/adopt?ticketId=
     await helpApi.adopt(id, ans.id)
