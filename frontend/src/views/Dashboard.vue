@@ -334,9 +334,12 @@ async function loadAll() {
   loading.value = false
 }
 function openPost(p: any) {
-  if (typeof p.id === 'string' && p.id.startsWith('k')) router.push('/knowledge/' + p.id.slice(1))
-  else if (typeof p.id === 'string' && p.id.startsWith('h')) router.push('/help/' + p.id.slice(1))
-  else router.push('/knowledge')
+  const id = String(p.id)
+  // 真实数据映射 id 带前缀 k/h；演示数据是纯数字 id，按是否求助单路由到对应详情页
+  if (id.startsWith('k')) return router.push('/knowledge/' + id.slice(1))
+  if (id.startsWith('h')) return router.push('/help/' + id.slice(1))
+  const isHelp = (p.tag && p.tag.includes('求助')) || (p.source && p.source.includes('求助'))
+  router.push(isHelp ? '/help/' + p.id : '/knowledge/' + p.id)
 }
 onMounted(loadAll)
 watch(() => route.query.scene, () => { activeTab.value = 0; loadAll() })

@@ -270,7 +270,8 @@ async function load() {
   loading.value = true
   entry.value = await loadOr(demo.enabled,
     () => knowledgeApi.detail(id),
-    demoKnowledgeEntries.find((e) => e.id === id) || null)
+    // 演示兜底：精确匹配不到(如生活圈帖子id)就退回首条,保证详情页不空白
+    demoKnowledgeEntries.find((e) => e.id === id) || demoKnowledgeEntries[0] || null)
   await loadRelated()
   loading.value = false
 }

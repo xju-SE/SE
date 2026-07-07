@@ -1,8 +1,7 @@
 <template>
   <div class="search-page xj-scene-life">
-    <!-- 英雄横幅：检索背景 + 中央大搜索框（对照参考图「检索界面」） -->
-    <!-- 整图展示：初始按 3:1 比例完整显示检索背景，向下滚动折叠回 tall 高度 -->
-    <PageHero :bg="bgSearch" tone="life" size="tall" light full-image :collapsed="heroCollapsed" :ratio="2.99">
+    <!-- 英雄横幅：检索背景全宽整图 + 中央大搜索框（固定高度,不随滚动折叠——之前的滚动折叠会改页面高度导致下滑卡顿） -->
+    <PageHero :bg="bgSearch" tone="life" size="tall" light>
       <div class="sh-row">
         <div class="sh-head">
           <h1 class="sh-title">探索无限可能</h1>
@@ -155,7 +154,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref, computed } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useDemoStore, loadOr } from '../store/demo'
 import { demoKnowledgeEntries, avatarFor } from '../mock/demoData'
@@ -305,16 +304,10 @@ function goDetail(e: any) {
   router.push('/knowledge/' + e.id)
 }
 
-// 横幅折叠：初始整图展示，向下滚动超过阈值折叠为 tall（回到顶部展开）
-const heroCollapsed = ref(false)
-function onScroll() { heroCollapsed.value = window.scrollY > 60 }
-
 onMounted(() => {
   loadHistory()
   load()
-  window.addEventListener('scroll', onScroll, { passive: true })
 })
-onBeforeUnmount(() => window.removeEventListener('scroll', onScroll))
 </script>
 
 <style scoped>
