@@ -1,5 +1,9 @@
 <template>
   <div class="admin-shell">
+    <!-- 全屏绿色雕塑背景 + 轻遮罩(保证卡片/文字可读) -->
+    <div class="admin-bg" :style="{ backgroundImage: `url(${bgGreen})` }"></div>
+    <div class="admin-bg-scrim"></div>
+
     <!-- 顶栏 -->
     <header class="admin-top">
       <router-link to="/admin" class="admin-brand">
@@ -47,6 +51,7 @@ import { useAuthStore } from '../store/auth'
 import { useDemoStore } from '../store/demo'
 import { avatarFor, demoMe } from '../mock/demoData'
 import XLogo from '../components/XLogo.vue'
+import bgGreen from '../assets/bg/绿色雕塑背景.png'
 import icDashboard from '../assets/icons/navigation/resources.svg'
 import icAudit from '../assets/icons/content/verified.svg'
 import icReport from '../assets/icons/status/warning.svg'
@@ -71,10 +76,15 @@ const avatar = computed(() => (auth.user as any)?.avatarUrl || avatarFor(display
 </script>
 
 <style scoped>
-.admin-shell { min-height: 100vh; background: var(--xj-page); display: flex; flex-direction: column; }
+.admin-shell { min-height: 100vh; background: var(--xj-page); display: flex; flex-direction: column; position: relative; }
+/* 全屏绿色雕塑背景固定铺满 + 轻遮罩 */
+.admin-bg { position: fixed; inset: 0; z-index: 0; background-size: cover; background-position: center; background-repeat: no-repeat; }
+.admin-bg-scrim { position: fixed; inset: 0; z-index: 0; background: linear-gradient(180deg, rgba(240,250,244,.72), rgba(235,247,240,.86)); }
+.admin-shell > .admin-top, .admin-shell > .admin-body { position: relative; z-index: 1; }
 
 .admin-top { height: 60px; flex: none; display: flex; align-items: center; gap: 14px; padding: 0 24px;
-  background: #fff; border-bottom: 1px solid var(--xj-line); box-shadow: 0 1px 0 rgba(8,20,38,.03); position: sticky; top: 0; z-index: 30; }
+  background: rgba(255,255,255,.72); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255,255,255,.5); box-shadow: 0 1px 12px rgba(8,40,24,.06); position: sticky; top: 0; z-index: 30; }
 .admin-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
 .admin-tag { font-size: 12px; font-weight: 800; color: var(--xj-green-deep); background: var(--xj-soft); padding: 3px 9px; border-radius: 7px; letter-spacing: .04em; }
 .admin-top-spacer { flex: 1; }
@@ -85,7 +95,7 @@ const avatar = computed(() => (auth.user as any)?.avatarUrl || avatarFor(display
 .au-role { flex: none; }
 
 .admin-body { flex: 1; display: flex; min-height: 0; }
-.admin-side { width: 208px; flex: none; background: #fff; border-right: 1px solid var(--xj-line); padding: 18px 12px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 60px; height: calc(100vh - 60px); }
+.admin-side { width: 208px; flex: none; background: rgba(255,255,255,.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-right: 1px solid rgba(255,255,255,.5); padding: 18px 12px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 60px; height: calc(100vh - 60px); }
 .as-item { display: flex; align-items: center; gap: 11px; padding: 11px 14px; border-radius: 11px; text-decoration: none; font-size: 13.5px; font-weight: 700; color: var(--xj-text); transition: all var(--xj-fast) var(--xj-ease); }
 .as-item:hover { background: var(--xj-soft); }
 .as-item.active { background: var(--xj-green-soft, #EAFBF0); color: var(--xj-green-deep); }
