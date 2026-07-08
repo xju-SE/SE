@@ -39,6 +39,8 @@ export const useAuthStore = defineStore('auth', {
       const defaultNames: Record<string, string> = { ADMIN: '平台管理员', ALUMNI: '校友学长', STUDENT: '林一航' }
       const name = username || defaultNames[role] || '演示用户'
       localStorage.setItem('demoUser', name)
+      // 会话标记：区分“本次会话已演示登录”（刷新保持）与“新打开”（应回登录页，不自动登录）
+      sessionStorage.setItem('demoLoggedIn', '1')
       this.user = { userId: role === 'ADMIN' ? 99 : 1, username: name, role, authStatus: 'VERIFIED' }
     },
     /** 演示模式刷新/直达时从 localStorage 还原演示身份（无真实 /users/me 可调） */
@@ -57,6 +59,7 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('refreshToken')
       localStorage.removeItem('demoRole')
       localStorage.removeItem('demoUser')
+      sessionStorage.removeItem('demoLoggedIn')
     },
   },
 })

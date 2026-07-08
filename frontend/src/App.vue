@@ -14,7 +14,9 @@ const demo = useDemoStore()
 onMounted(() => {
   if (!auth.isLogin || auth.user) return
   if (demo.enabled) {
-    auth.restoreDemoUser()
+    // 仅在“本次会话已演示登录”时还原身份;新打开时清掉遗留会话,交由守卫导向登录页
+    if (sessionStorage.getItem('demoLoggedIn')) auth.restoreDemoUser()
+    else auth.logout()
   } else {
     auth.fetchMe().catch(() => auth.logout())
   }

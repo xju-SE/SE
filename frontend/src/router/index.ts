@@ -58,7 +58,16 @@ router.beforeEach(async (to) => {
   if (to.meta.public) return true
   // 演示模式：全站可浏览无需登录；但管理页仍按“演示身份”的角色控制，让登录页“切换管理员”有意义
   if (demo.enabled) {
-    if (auth.isLogin && !auth.user) auth.restoreDemoUser() // 刷新/直达时从 localStorage 还原演示身份
+    // 会话内已演示登录 → 刷新/直达时还原演示身份;否则清掉上次遗留的演示会话,本次从登录页开始
+    if (sessionStorage.getItem('demoLoggedIn')) {
+      if (auth.isLogin && !auth.user) auth.restoreDemoUser()
+    } else if (auth.token === 'demo-token') {
+      auth.logout()
+    }
+    // 未登录时,非公开页一律先到登录页(不再自动登录为演示用户)
+    if (!auth.isLogin && !to.meta.public) {
+      return { path: '/login', query: { redirect: to.fullPath } }
+    }
     if (to.meta.admin && !auth.isAdmin) return { path: '/dashboard' }
     return true
   }
