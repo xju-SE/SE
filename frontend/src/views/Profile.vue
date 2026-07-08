@@ -415,6 +415,9 @@ watch(isLife, () => {
 /* 横幅个人卡：X 雕塑背景在图右下角，需 min-height + right bottom 定位才不被裁掉 */
 .pf-hero { position: relative; overflow: hidden; color: #fff; min-height: 240px; display: flex; align-items: center; }
 .pf-bg { position: absolute; inset: 0; background-size: cover; background-position: right bottom; }
+/* 蓝图(学业圈)雕塑在右下角圆台→right bottom;绿图(生活圈)超宽横幅,雕塑在右侧偏中→right center 才不裁顶/不压偏 */
+.pf-hero.study .pf-bg { background-position: right bottom; }
+.pf-hero.life .pf-bg { background-position: right center; }
 .pf-mask { position: absolute; inset: 0; }
 .pf-hero.study .pf-mask { background: linear-gradient(95deg, rgba(234,242,255,.95) 0%, rgba(219,234,255,.72) 28%, rgba(198,221,255,.22) 52%, rgba(255,255,255,0) 74%); }
 .pf-hero.life .pf-mask { background: linear-gradient(95deg, rgba(233,249,239,.95) 0%, rgba(213,242,224,.72) 28%, rgba(186,232,204,.22) 52%, rgba(255,255,255,0) 74%); }
